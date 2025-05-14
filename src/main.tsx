@@ -1,5 +1,6 @@
+// src/main.tsx
 import { registerRootComponent } from 'expo';
 import App from './App';
 
-// Registra App como el componente raíz
+// Register App as the root component
 registerRootComponent(App);

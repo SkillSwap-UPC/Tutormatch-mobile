@@ -14,6 +14,11 @@ import NotFoundPage from './public/pages/not-found/NotFoundPage';
 import ProfilePage from './public/pages/profile/ProfilePage';
 import SupportPage from './support/pages/SupportPage';
 import TutoringDetailsPage from './tutoring/pages/TutoringDetailsPage';
+import { applyDeepPatches } from './utils/deepPatches';
+import { patchReactNativeText } from './utils/patchText';
+import './utils/textScalingFix';
+patchReactNativeText();
+applyDeepPatches();
 
 
 export type RootStackParamList = {
