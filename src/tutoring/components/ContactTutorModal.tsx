@@ -1,10 +1,10 @@
+import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   Linking,
   Modal,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View

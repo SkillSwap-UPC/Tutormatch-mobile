@@ -1,6 +1,7 @@
+import { Text } from '@/src/utils/TextFix';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import TutoringCard from '../../tutoring/components/TutoringCard';
 import { TutoringService } from '../../tutoring/services/TutoringService';
 import { TutoringSession } from '../../tutoring/types/Tutoring';

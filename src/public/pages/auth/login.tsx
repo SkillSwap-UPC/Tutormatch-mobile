@@ -1,13 +1,14 @@
+import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View

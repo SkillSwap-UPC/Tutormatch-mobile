@@ -1,3 +1,4 @@
+import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
@@ -5,7 +6,6 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from 'react-native';

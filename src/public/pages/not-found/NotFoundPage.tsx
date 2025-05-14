@@ -1,7 +1,9 @@
+import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { RootStackParamList } from '../../../App';
 
 const NotFoundPage: React.FC = () => {

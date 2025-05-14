@@ -1,13 +1,14 @@
+import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
+
 import {
   ActivityIndicator,
   Image,
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View

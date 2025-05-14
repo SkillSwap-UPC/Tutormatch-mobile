@@ -1,8 +1,8 @@
+import { Text } from '@/src/utils/TextFix';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { useAvatar } from '../hooks/avatarContext';
-
 interface AvatarProps {
   user: {
     firstName?: string;

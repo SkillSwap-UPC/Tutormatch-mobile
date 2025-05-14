@@ -1,6 +1,7 @@
+import { Text } from '@/src/utils/TextFix';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface TimeSlotSelectorBySectionProps {
   days: string[];

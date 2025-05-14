@@ -1,3 +1,4 @@
+import { Text } from '@/src/utils/TextFix';
 import {
   Ionicons,
   MaterialIcons
@@ -5,13 +6,13 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useState } from 'react';
+
 import {
   ActivityIndicator,
   Image,
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View

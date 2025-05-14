@@ -1,14 +1,15 @@
+import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { createClient } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
+
 import {
   ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View

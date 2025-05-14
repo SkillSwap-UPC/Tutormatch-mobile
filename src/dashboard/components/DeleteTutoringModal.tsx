@@ -1,6 +1,8 @@
+import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener expo/vector-icons instalado
 import React, { useState } from 'react';
-import { ActivityIndicator, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { ActivityIndicator, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { TutoringSession } from '../../tutoring/types/Tutoring';
 
 interface DeleteTutoringModalProps {
