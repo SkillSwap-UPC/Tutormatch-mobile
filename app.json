@@ -18,7 +18,8 @@
         "backgroundColor": "#ffffff"
       },
       "allowFontScaling": false,
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.tutormatchmobile"
     },
     "web": {
       "bundler": "metro",
