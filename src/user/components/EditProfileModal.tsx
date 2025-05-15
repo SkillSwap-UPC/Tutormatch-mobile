@@ -24,17 +24,17 @@ interface EditProfileModalProps {
   onSave: (user: User) => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ 
-  visible, 
-  onHide, 
-  user, 
-  onSave 
+const EditProfileModal: React.FC<EditProfileModalProps> = ({
+  visible,
+  onHide,
+  user,
+  onSave
 }) => {
   const [formData, setFormData] = useState<User>(user);
   const [profileImage, setProfileImage] = useState<string | undefined>(user.avatar);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const { updateAvatarUrl } = useAvatar();
-  
+
   // Reiniciar los datos del formulario cuando se abre el modal
   useEffect(() => {
     if (visible) {
@@ -70,12 +70,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     try {
       // Solicitar permisos primero
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (status !== 'granted') {
         Alert.alert('Permiso denegado', 'Se requieren permisos para acceder a la galería');
         return;
       }
-      
+
       // Abrir selector de imágenes
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -83,14 +83,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         aspect: [1, 1], // Avatar suele ser cuadrado
         quality: 0.8,
       });
-      
+
       if (result.canceled || !result.assets || result.assets.length === 0) {
         return;
       }
-      
+
       // Obtener el primer activo seleccionado
       const selectedAsset = result.assets[0];
-      
+
       // Validaciones básicas
       if (selectedAsset.fileSize && selectedAsset.fileSize > 5 * 1024 * 1024) {
         throw new Error('El archivo es demasiado grande. Máximo 5MB.');
@@ -98,7 +98,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       // Previsualización inmediata
       setProfileImage(selectedAsset.uri);
-      
+
       setUploadingImage(true);
       Alert.alert('Subiendo', 'Subiendo imagen al servidor...');
 
@@ -191,6 +191,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       visible={visible}
       animationType="slide"
       onRequestClose={onHide}
+      statusBarTranslucent={true}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
@@ -203,8 +204,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </View>
 
           {/* Content */}
-          <ScrollView style={styles.scrollView}>
-            <View style={styles.content}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={true}
+          >
+            <View style={styles.contentContainer}>
               {/* Foto de perfil */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Foto de Perfil</Text>
@@ -337,13 +342,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
-    width: '95%',
-    maxHeight: '90%',
+    width: '90%',
+    maxHeight: '80%',
     backgroundColor: '#1f1f1f',
     borderRadius: 8,
     overflow: 'hidden',
@@ -356,6 +361,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
+    zIndex: 10,
   },
   headerTitle: {
     fontSize: 18,
@@ -367,9 +373,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    width: '100%',
   },
-  content: {
+  contentContainer: {
     padding: 16,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 20,

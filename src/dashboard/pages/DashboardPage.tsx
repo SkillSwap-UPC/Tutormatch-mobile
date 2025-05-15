@@ -2,7 +2,14 @@ import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { useAuth } from '../../public/hooks/useAuth';
 import TutoringRecommendations from '../../tutoring/components/TutoringRecommendations';
 import { TutoringService } from '../../tutoring/services/TutoringService';

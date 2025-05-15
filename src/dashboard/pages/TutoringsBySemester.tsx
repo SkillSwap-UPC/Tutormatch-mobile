@@ -1,28 +1,41 @@
 import { Text } from '@/src/utils/TextFix';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  View
+} from 'react-native';
 import TutoringCard from '../../tutoring/components/TutoringCard';
 import { TutoringService } from '../../tutoring/services/TutoringService';
 import { TutoringSession } from '../../tutoring/types/Tutoring';
 import DashboardLayout from '../components/DashboardLayout';
 import { SemesterService } from '../services/SemesterService';
 
-type RouteParamList = {
-  TutoringsBySemester: {
-    semesterId: string;
-  };
+type RootStackParamList = {
+  TutoringsBySemester: { semesterId: string };
+  TutoringDetail: { id: string };
 };
 
+type TutoringsBySemesterScreenRouteProp = RouteProp<RootStackParamList, 'TutoringsBySemester'>;
+type TutoringsBySemesterScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
 const TutoringsBySemester: React.FC = () => {
-  // Usar React Navigation para obtener parámetros en lugar de useParams de react-router-dom
-  const route = useRoute<RouteProp<RouteParamList, 'TutoringsBySemester'>>();
-  const { semesterId } = route.params;
-  
+  const route = useRoute<TutoringsBySemesterScreenRouteProp>();
+  const navigation = useNavigation<TutoringsBySemesterScreenNavigationProp>();
+  const { semesterId } = route.params || {};
+
   const [tutorings, setTutorings] = useState<TutoringSession[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [semesterName, setSemesterName] = useState<string>('');
+
+  // Determinar el número de columnas según el ancho de pantalla
+  const screenWidth = Dimensions.get('window').width;
+  const numColumns = screenWidth >= 768 ? 2 : 1; // 2 columnas en tablet, 1 en móvil
 
   useEffect(() => {
     const fetchTutorings = async () => {
@@ -71,16 +84,33 @@ const TutoringsBySemester: React.FC = () => {
     fetchTutorings();
   }, [semesterId]);
 
+  // Manejar clic en una tarjeta de tutoría
+  const handleTutoringClick = (tutoringId: string) => {
+    navigation.navigate('TutoringDetail', { id: tutoringId });
+  };
+
+  const renderItem = ({ item }: { item: TutoringSession }) => (
+    <View style={[
+      styles.cardWrapper,
+      { width: numColumns > 1 ? '48%' : '100%' }
+    ]}>
+      <TutoringCard
+        tutoring={item}
+        onClick={handleTutoringClick}
+      />
+    </View>
+  );
+
   return (
     <DashboardLayout>
-      <ScrollView style={styles.container}>
+      <View style={styles.container}>
         <Text style={styles.title}>
           {semesterName} Semester
         </Text>
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#F05C5C" />
+            <ActivityIndicator size="large" color="#8B5CF6" />
             <Text style={styles.loadingText}>Cargando tutorías...</Text>
           </View>
         ) : error ? (
@@ -88,17 +118,23 @@ const TutoringsBySemester: React.FC = () => {
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : tutorings.length > 0 ? (
-          <View style={styles.tutoringGrid}>
-            {tutorings.map((tutoring) => (
-              <TutoringCard key={tutoring.id} tutoring={tutoring} />
-            ))}
-          </View>
+          <FlatList
+            data={tutorings}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={numColumns}
+            columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+          />
         ) : (
-          <Text style={styles.emptyText}>
-            No hay tutorías disponibles para este semestre.
-          </Text>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No hay tutorías disponibles para este semestre.
+            </Text>
+          </View>
         )}
-      </ScrollView>
+      </View>
     </DashboardLayout>
   );
 };
@@ -106,39 +142,57 @@ const TutoringsBySemester: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
   },
   title: {
-    fontSize: 24, 
+    fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 24,
   },
   loadingContainer: {
-    alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
-    paddingVertical: 40,
+    alignItems: 'center',
   },
   loadingText: {
     color: 'white',
     marginTop: 16,
+    fontSize: 16,
   },
   errorContainer: {
     backgroundColor: 'rgba(220, 38, 38, 0.25)',
     borderWidth: 1,
-    borderColor: '#B91C1C',
+    borderColor: '#ef4444',
     borderRadius: 8,
     padding: 16,
     marginVertical: 16,
   },
   errorText: {
-    color: '#EF4444',
+    color: '#ef4444',
+    fontSize: 14,
   },
-  tutoringGrid: {
-    flexDirection: 'column',
+  listContent: {
+    paddingBottom: 20,
+  },
+  row: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  cardWrapper: {
+    marginBottom: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   emptyText: {
-    color: '#9CA3AF',
-  },
+    color: '#9ca3af',
+    fontSize: 16,
+    textAlign: 'center',
+  }
 });
 
 export default TutoringsBySemester;

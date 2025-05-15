@@ -33,7 +33,7 @@ export default function LoginPage() {
   // Redirigir si ya hay un usuario autenticado
   useEffect(() => {
     if (user) {
-      navigation.navigate('Dashboard');
+      navigation.navigate('Profile', { userId: user.id });
     }
   }, [user, navigation]);
 
@@ -100,7 +100,7 @@ export default function LoginPage() {
         // Navegar al Dashboard independientemente de si tenemos el perfil completo
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Dashboard' }]
+          routes: [{ name: 'Profile' }]
         });
       } else {
         console.log('❌ No se pudo autenticar al usuario');
@@ -299,11 +299,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   forgotPasswordText: {
-    color: '#8B5CF6', // text-primary
+    color: '#d93548', // text-primary
     fontSize: 12,
   },
   button: {
-    backgroundColor: '#8B5CF6', // bg-primary
+    backgroundColor: '#d93548', // bg-primary
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   registerLink: {
-    color: '#8B5CF6', // text-primary
+    color: '#d93548', // text-primary
     fontWeight: '500',
   },
 });

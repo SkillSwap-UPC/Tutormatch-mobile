@@ -381,9 +381,10 @@ const EditTutoringModal: React.FC<EditTutoringModalProps> = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       onRequestClose={onHide}
+      statusBarTranslucent={true}
     >
       {renderToast()}
       
@@ -636,19 +637,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    width: '100%',
+    height: '100%'
   },
   modalContainer: {
     width: '90%',
-    maxHeight: '90%',
+    height: '80%',
     backgroundColor: '#1f1f1f',
     borderRadius: 8,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5
+    elevation: 5,
   },
   header: {
     flexDirection: 'row',
@@ -665,10 +667,12 @@ const styles = StyleSheet.create({
     color: 'white'
   },
   scrollView: {
-    flex: 1
+    flex: 1,
+    width: '100%'
   },
   contentContainer: {
-    padding: 16
+    padding: 16,
+    paddingBottom: 40
   },
   section: {
     marginBottom: 24

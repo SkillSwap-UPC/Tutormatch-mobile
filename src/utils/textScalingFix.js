@@ -1,13 +1,19 @@
 import { Text, TextInput } from 'react-native';
 
-// Simple polyfill for Text component
-if (Text.defaultProps === undefined) {
-  Text.defaultProps = {};
+// Fix for Text component
+if (Text) {
+  if (!Text.defaultProps) {
+    Text.defaultProps = {};
+  }
+  Text.defaultProps.allowFontScaling = false;
 }
-Text.defaultProps.allowFontScaling = false;
 
-// Also fix TextInput if needed
-if (TextInput.defaultProps === undefined) {
-  TextInput.defaultProps = {};
+// Fix for TextInput
+if (TextInput) {
+  if (!TextInput.defaultProps) {
+    TextInput.defaultProps = {};
+  }
+  TextInput.defaultProps.allowFontScaling = false;
 }
-TextInput.defaultProps.allowFontScaling = false;
+
+console.log('Text scaling fix applied');

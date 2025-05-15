@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#8B5CF6',
+    borderColor: '#d93548',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#d93548',
   },
   radioText: {
     color: '#F0F0F0',
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   button: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#d93548',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -694,14 +694,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   genderSelected: {
-    borderColor: '#8B5CF6',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: '#d93548',
+    backgroundColor: 'rgba(246, 92, 92, 0.1)',
   },
   genderText: {
     color: '#9CA3AF',
   },
   genderTextSelected: {
-    color: '#8B5CF6',
+    color: '#d93548',
   },
   semesterContainer: {
     flexDirection: 'row',
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   semesterButton: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#d93548',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footerLink: {
-    color: '#8B5CF6',
+    color: '#d93548',
     fontWeight: '500',
   },
 });

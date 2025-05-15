@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+# TutorMatch Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+TutorMatch es una aplicación móvil que conecta estudiantes con tutores de la Universidad Peruana de Ciencias Aplicadas (UPC) para recibir apoyo académico personalizado en diversos cursos.
 
-## Get started
+## Descripción del proyecto
 
-1. Install dependencies
+TutorMatch facilita la búsqueda y contratación de tutorías académicas entre alumnos de la UPC, permitiendo a los estudiantes encontrar ayuda en materias específicas y a los tutores ofrecer sus servicios educativos.
 
+### Características principales
+
+- **Búsqueda por semestres**: Filtrado de tutorías según el semestre académico
+- **Recomendaciones personalizadas**: Sugerencias basadas en el perfil del estudiante
+- **Perfiles detallados**: Información completa de tutores con valoraciones
+- **Horarios flexibles**: Sistema de disponibilidad por franjas horarias
+- **Sistema de valoraciones**: Calificaciones y reseñas para cada tutoría
+- **Diseño adaptable**: Interfaz optimizada para móviles y tablets
+- **Modo oscuro**: Interfaz visual confortable para uso nocturno
+
+## Tecnologías utilizadas
+
+- **React Native**: Framework de desarrollo móvil multiplataforma
+- **Expo**: Plataforma para simplificar el desarrollo
+- **TypeScript**: Lenguaje tipado para mayor robustez del código
+- **React Navigation**: Navegación entre pantallas
+- **AsyncStorage**: Persistencia de datos local
+- **Expo Image Picker**: Gestión de subida de imágenes
+- **Ionicons**: Iconografía coherente en toda la app
+
+## Roles de usuario
+
+### Estudiantes pueden:
+- Buscar tutorías por cursos o semestres
+- Ver perfiles y valoraciones de tutores
+- Contactar directamente con tutores
+- Dejar reseñas y valoraciones
+
+### Tutores pueden:
+- Crear perfiles profesionales
+- Publicar tutorías por curso y semestre
+- Establecer horarios de disponibilidad
+- Fijar sus propias tarifas
+
+## Instalación y ejecución
+
+1. Clonar el repositorio
    ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   git clone https://github.com/SkillSwap-UPC/tutormatch-mobile
+   cd tutormatch-mobile

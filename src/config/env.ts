@@ -6,6 +6,7 @@ export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 // Backend
 export const API_URL = "https://tutormatch-backend.onrender.com";
+//export const API_URL  = "http://localhost:3000";
 
 // Archivo de configuración de entorno
 console.log('API_URL:', API_URL);

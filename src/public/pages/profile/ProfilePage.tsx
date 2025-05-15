@@ -79,7 +79,7 @@ const ProfilePage: React.FC = () => {
         if (!currentUserId) {
           // Si no hay ID de usuario, redirigir al login
           Alert.alert(
-            'Error', 
+            'Error',
             'Sesión no encontrada. Por favor inicia sesión.'
           );
           navigation.navigate('Login');
@@ -125,7 +125,7 @@ const ProfilePage: React.FC = () => {
     } catch (error: any) {
       console.error('Error al actualizar perfil:', error);
       Alert.alert(
-        'Error', 
+        'Error',
         error.response?.data?.message || 'Error al actualizar perfil'
       );
     }
@@ -173,7 +173,7 @@ const ProfilePage: React.FC = () => {
     } catch (error: any) {
       console.error('Error al eliminar cuenta:', error);
       Alert.alert(
-        'Error', 
+        'Error',
         error.response?.data?.message || 'Error al eliminar la cuenta'
       );
     } finally {
@@ -210,12 +210,12 @@ const ProfilePage: React.FC = () => {
   // Formatear la fecha de creación
   const formatDate = (dateString?: string | Date) => {
     if (!dateString) return 'Fecha desconocida';
-    
+
     try {
-      const date = typeof dateString === 'string' 
-        ? new Date(dateString) 
+      const date = typeof dateString === 'string'
+        ? new Date(dateString)
         : dateString;
-        
+
       return date.toLocaleDateString('es-ES');
     } catch {
       return 'Fecha inválida';
@@ -231,7 +231,7 @@ const ProfilePage: React.FC = () => {
   return (
     <View style={styles.container}>
       <Navbar />
-      
+
       {/* Contenido principal */}
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.profileCard}>
@@ -259,7 +259,7 @@ const ProfilePage: React.FC = () => {
                 </Text>
               )}
             </View>
-            
+
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
               <Text style={styles.userEmail}>{user.email}</Text>
@@ -302,6 +302,34 @@ const ProfilePage: React.FC = () => {
                 No hay número de teléfono disponible.
               </Text>
             )}
+          </View>
+
+          <View style={styles.infoSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="help-circle" size={20} color="white" style={styles.sectionIcon} />
+              <Text style={styles.sectionTitle}>Soporte</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.supportButton}
+              onPress={() => navigation.navigate('Support')}
+            >
+              <Ionicons name="chatbubble-ellipses" size={16} color="white" style={styles.buttonIcon} />
+              <Text style={styles.supportButtonText}>Contactar con soporte</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.infoSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="book-outline" size={20} color="white" style={styles.sectionIcon} />
+              <Text style={styles.sectionTitle}>Tutoría Recomendada</Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.supportButton]}
+              onPress={() => navigation.navigate('TutoringDetails', { tutoringId: '09fc6df7-619f-4fd6-8989-90d1fc7461a3' })}
+            >
+              <Ionicons name="book" size={16} color="white" style={styles.buttonIcon} />
+              <Text style={styles.supportButtonText}>Ver tutoría recomendada</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Opciones de perfil - solo visibles para el usuario actual */}
@@ -510,6 +538,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#F05C5C',
     padding: 10,
     borderRadius: 8,
+  },
+  supportButton: {
+    backgroundColor: '#d93548',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  supportButtonText: {
+    color: 'white',
+    fontWeight: '500',
   },
 });
 

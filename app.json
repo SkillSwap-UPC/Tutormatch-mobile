@@ -4,7 +4,7 @@
     "slug": "tutormatch-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "entryPoint": "./src/main.tsx",
+    "entryPoint": "./index.js",
     "icon": "./assets/images/icon.png",
     "scheme": "tutormatchmobile",
     "userInterfaceStyle": "automatic",
