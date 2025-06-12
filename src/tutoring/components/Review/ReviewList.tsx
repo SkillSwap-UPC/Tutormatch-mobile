@@ -1,6 +1,6 @@
-import { Text } from '@/src/utils/TextFix';
 import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
+import { Text } from '../../../utils/TextFix';
 import { TutoringReview } from '../../types/Tutoring';
 import ReviewCard from './ReviewCard';
 

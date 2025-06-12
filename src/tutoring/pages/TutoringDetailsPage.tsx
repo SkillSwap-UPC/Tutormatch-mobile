@@ -1,4 +1,3 @@
-import { Text } from '@/src/utils/TextFix';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -6,6 +5,7 @@ import { CourseService } from '../../course/services/CourseService';
 import { Course } from '../../course/types/Course';
 import { UserService } from '../../user/services/UserService';
 import { User } from '../../user/types/User';
+import { Text } from '../../utils/TextFix';
 import TutoringDetails from '../components/TutoringDetails';
 import { TutoringService } from '../services/TutoringService';
 import { TutoringReview, TutoringSession } from '../types/Tutoring';

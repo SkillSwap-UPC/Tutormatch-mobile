@@ -1,4 +1,3 @@
-import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
@@ -14,10 +13,12 @@ import { useAuth } from '../../public/hooks/useAuth';
 import TutoringRecommendations from '../../tutoring/components/TutoringRecommendations';
 import { TutoringService } from '../../tutoring/services/TutoringService';
 import { TutoringSession } from '../../tutoring/types/Tutoring';
+import { Text } from '../../utils/TextFix';
 import DashboardLayout from '../components/DashboardLayout';
+import Navbar from '../components/Navbar';
 
 type RootStackParamList = {
-  TutoringDetail: { id: string};
+  TutoringDetails: { tutoringId: string};
   Profile: undefined;
 };
 
@@ -58,86 +59,88 @@ const DashboardPage: React.FC = () => {
 
   // Manejar clic en una tarjeta de tutoría
   const handleTutoringClick = (tutoringId: string) => {
-    navigation.navigate('TutoringDetail', { id: tutoringId });
+    navigation.navigate('TutoringDetails', { tutoringId: tutoringId });
   };
 
   // Determinar si estamos cargando cualquier dato
   const loading = userLoading || isLoading;
-
-  return (
-    <DashboardLayout>
-      <ScrollView style={styles.container}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#f05c5c" />
-            <Text style={styles.loadingText}>Cargando datos del dashboard...</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : (
-          <>
-            {/* Perfil del usuario */}
-            {user && (
-              <View style={styles.profileCard}>
-                <View style={styles.profileContent}>
-                  <View style={styles.avatarContainer}>
-                    {user.avatar ? (
-                      <Image 
-                        source={{ uri: user.avatar }} 
-                        style={styles.avatar}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={styles.avatarPlaceholder}>
-                        <Text style={styles.avatarInitial}>
-                          {user.firstName?.charAt(0) || user.lastName?.charAt(0) || 'U'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.userInfo}>
-                    <Text style={styles.welcomeText}>
-                      ¡Hola de nuevo, {user.firstName} {user.lastName}!
-                    </Text>
-                    <Text style={styles.userRole}>
-                      {user.role === 'tutor' ? 'Tutor' : 'Estudiante'} • {user.semesterNumber}° Semestre
-                    </Text>
-                    <Text style={styles.userAcademicYear}>{user.academicYear || 'No especificado'}</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.profileButton}
-                    onPress={() => navigation.navigate('Profile')}
-                  >
-                    <Text style={styles.profileButtonText}>Ver perfil</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {/* Sección de tutorías recomendadas */}
-            <View style={styles.recommendationsSection}>
-              <Text style={styles.sectionTitle}>
-                Tutorías disponibles para ti
-              </Text>
-              {recommendedTutorings.length > 0 ? (
-                <TutoringRecommendations
-                  tutorings={recommendedTutorings}
-                  onTutoringClick={handleTutoringClick}
+  // Crear el header del perfil como componente separado
+  const ProfileHeader = () => (
+    <>
+      {user && (
+        <View style={styles.profileCard}>
+          <View style={styles.profileContent}>
+            <View style={styles.avatarContainer}>
+              {user.avatar ? (
+                <Image 
+                  source={{ uri: user.avatar }} 
+                  style={styles.avatar}
+                  resizeMode="cover"
                 />
               ) : (
-                <View style={styles.emptyStateContainer}>
-                  <Text style={styles.emptyStateText}>
-                    Aún no hay tutorías recomendadas disponibles.
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarInitial}>
+                    {user.firstName?.charAt(0) || user.lastName?.charAt(0) || 'U'}
                   </Text>
                 </View>
               )}
             </View>
-          </>
-        )}
-      </ScrollView>
-    </DashboardLayout>
+            <View style={styles.userInfo}>
+              <Text style={styles.welcomeText}>
+                ¡Hola de nuevo, {user.firstName} {user.lastName}!
+              </Text>
+              <Text style={styles.userRole}>
+                {user.role === 'tutor' ? 'Tutor' : 'Estudiante'} • {user.semesterNumber}° Semestre
+              </Text>
+              <Text style={styles.userAcademicYear}>{user.academicYear || 'No especificado'}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <Text style={styles.profileButtonText}>Ver perfil</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      <Text style={styles.sectionTitle}>
+        Tutorías disponibles para ti
+      </Text>
+    </>
+  );
+  return (
+    <>
+      <Navbar />
+      <DashboardLayout>
+        <View style={styles.container}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#f05c5c" />
+              <Text style={styles.loadingText}>Cargando datos del dashboard...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : recommendedTutorings.length > 0 ? (
+            <TutoringRecommendations
+              tutorings={recommendedTutorings}
+              onTutoringClick={handleTutoringClick}
+              ListHeaderComponent={<ProfileHeader />}
+            />
+          ) : (
+            <ScrollView style={styles.fallbackScrollView}>
+              <ProfileHeader />
+              <View style={styles.emptyStateContainer}>
+                <Text style={styles.emptyStateText}>
+                  Aún no hay tutorías recomendadas disponibles.
+                </Text>
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </DashboardLayout>
+    </>
   );
 };
 
@@ -234,13 +237,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 4,
-  },
-  profileButtonText: {
+  },  profileButtonText: {
     color: 'white',
     fontWeight: '500',
-  },
-  recommendationsSection: {
-    marginBottom: 24,
   },
   sectionTitle: {
     color: 'white',
@@ -253,10 +252,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 24,
     alignItems: 'center',
-  },
-  emptyStateText: {
+  },  emptyStateText: {
     color: '#9ca3af',
     textAlign: 'center',
+  },
+  fallbackScrollView: {
+    flex: 1,
   },
 });
 

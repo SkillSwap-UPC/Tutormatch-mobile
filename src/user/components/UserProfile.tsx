@@ -1,6 +1,6 @@
-import { Text } from '@/src/utils/TextFix';
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import { Text } from '../../utils/TextFix';
 import { User } from '../types/User';
 
 interface UserProfileProps {

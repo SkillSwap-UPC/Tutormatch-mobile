@@ -1,14 +1,14 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
+import { Text } from '../../../utils/TextFix';
 
 import {
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { RootStackParamList } from '../../../App';
 import NavbarAuth from '../../components/NavbarAuth';

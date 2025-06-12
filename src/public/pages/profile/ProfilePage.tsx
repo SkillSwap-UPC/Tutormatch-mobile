@@ -1,9 +1,11 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
+import { Text } from '../../../utils/TextFix';
 
+import BottomNavbar from '@/src/dashboard/components/BottomNavbar';
+import Sidebar from '@/src/dashboard/components/SideBar';
 import {
   ActivityIndicator,
   Alert,
@@ -20,7 +22,6 @@ import EditProfileModal from '../../../user/components/EditProfileModal';
 import LogoutModal from '../../../user/components/LogOutProfileModal';
 import { UserService } from '../../../user/services/UserService';
 import { User as UserType } from '../../../user/types/User';
-import Footer from '../../components/Footer';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthService } from '../../services/authService';
 
@@ -40,6 +41,11 @@ const ProfilePage: React.FC = () => {
   const [isLogOutModalVisible, setLogOutModalVisible] = useState(false);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [logoutAccount, setLogoutAccount] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible);
+  };
 
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { signOut, user: authUser } = useAuth();
@@ -190,7 +196,6 @@ const ProfilePage: React.FC = () => {
           <ActivityIndicator size="large" color="#F05C5C" />
           <Text style={styles.loadingText}>Cargando datos del perfil...</Text>
         </View>
-        <Footer />
       </View>
     );
   }
@@ -202,7 +207,6 @@ const ProfilePage: React.FC = () => {
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No se encontró información del usuario</Text>
         </View>
-        <Footer />
       </View>
     );
   }
@@ -304,34 +308,6 @@ const ProfilePage: React.FC = () => {
             )}
           </View>
 
-          <View style={styles.infoSection}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="help-circle" size={20} color="white" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Soporte</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.supportButton}
-              onPress={() => navigation.navigate('Support')}
-            >
-              <Ionicons name="chatbubble-ellipses" size={16} color="white" style={styles.buttonIcon} />
-              <Text style={styles.supportButtonText}>Contactar con soporte</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.infoSection}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="book-outline" size={20} color="white" style={styles.sectionIcon} />
-              <Text style={styles.sectionTitle}>Tutoría Recomendada</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.supportButton]}
-              onPress={() => navigation.navigate('TutoringDetails', { tutoringId: '09fc6df7-619f-4fd6-8989-90d1fc7461a3' })}
-            >
-              <Ionicons name="book" size={16} color="white" style={styles.buttonIcon} />
-              <Text style={styles.supportButtonText}>Ver tutoría recomendada</Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Opciones de perfil - solo visibles para el usuario actual */}
           {isCurrentUser && (
             <View style={styles.actionButtons}>
@@ -354,8 +330,9 @@ const ProfilePage: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* Footer */}
-      <Footer />
+      <BottomNavbar onToggleSidebar={toggleSidebar} />
+
+      <Sidebar visible={sidebarVisible} onClose={() => setSidebarVisible(false)} />
 
       {/* Modales - solo se renderizan para el usuario actual */}
       {isCurrentUser && (

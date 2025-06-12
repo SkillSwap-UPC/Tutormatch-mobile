@@ -7,12 +7,14 @@ interface TutoringRecommendationsProps {
   title?: string;
   tutorings: TutoringSession[];
   onTutoringClick: (tutoringId: string) => void;
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
 
 const TutoringRecommendations: React.FC<TutoringRecommendationsProps> = ({ 
   tutorings, 
-  onTutoringClick 
+  onTutoringClick,
+  ListHeaderComponent 
 }) => {
   if (!tutorings || tutorings.length === 0) {
     return null;
@@ -35,8 +37,8 @@ const TutoringRecommendations: React.FC<TutoringRecommendationsProps> = ({
   );
   
   return (
-    <View style={styles.container}>
-      <FlatList
+    <View style={styles.container}>      
+    <FlatList
         data={tutorings}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
@@ -44,6 +46,7 @@ const TutoringRecommendations: React.FC<TutoringRecommendationsProps> = ({
         columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={ListHeaderComponent}
       />
     </View>
   );
@@ -53,9 +56,8 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     marginBottom: 32,
-  },
-  listContent: {
-    paddingHorizontal: 16,
+  },  listContent: {
+    paddingBottom: 20,
   },
   row: {
     flex: 1,

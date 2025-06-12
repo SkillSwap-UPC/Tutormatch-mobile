@@ -1,7 +1,7 @@
-import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
+import { Text } from '../../../utils/TextFix';
 
 import {
   ActivityIndicator,
@@ -33,7 +33,7 @@ export default function LoginPage() {
   // Redirigir si ya hay un usuario autenticado
   useEffect(() => {
     if (user) {
-      navigation.navigate('Profile', { userId: user.id });
+      navigation.navigate('Dashboard');
     }
   }, [user, navigation]);
 

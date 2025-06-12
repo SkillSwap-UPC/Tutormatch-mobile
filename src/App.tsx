@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { StatusBar } from 'react-native';
+import DashboardPage from './dashboard/pages/DashboardPage';
+import TutoringsBySemester from './dashboard/pages/TutoringsBySemester';
 import ForgotPasswordPage from './public/pages/auth/forgot-password';
 import LoginPage from './public/pages/auth/login';
 import RegisterPage from './public/pages/auth/register';
@@ -11,11 +13,11 @@ import NotFoundPage from './public/pages/not-found/NotFoundPage';
 import ProfilePage from './public/pages/profile/ProfilePage';
 import SupportPage from './support/pages/SupportPage';
 import TutoringDetailsPage from './tutoring/pages/TutoringDetailsPage';
-import './utils/deepFix';
-import { applyDeepPatches } from './utils/deepPatches';
-import { patchReactNativeText } from './utils/patchText';
-patchReactNativeText();
-applyDeepPatches();
+// import './utils/deepFix';
+// import { applyDeepPatches } from './utils/deepPatches';
+// import { patchReactNativeText } from './utils/patchText';
+// patchReactNativeText();
+// applyDeepPatches();
 
 
 export type RootStackParamList = {
@@ -48,9 +50,9 @@ const App = () => {
       >
         <Stack.Screen name="Login" component={LoginPage} />
         <Stack.Screen name="Register" component={RegisterPage} />
-       {/*  <Stack.Screen name="Dashboard" component={DashboardPage} /> */}
+        <Stack.Screen name="Dashboard" component={DashboardPage} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordPage} />
-       {/*  <Stack.Screen name="TutoringsBySemester" component={TutoringsBySemester} /> */}
+        <Stack.Screen name="TutoringsBySemester" component={TutoringsBySemester} />
         <Stack.Screen name="RegisterSuccess" component={RegisterSuccessPage} />
         <Stack.Screen name="VerifyEmail" component={VerifyEmailPage} />
         <Stack.Screen name="TutoringDetails" component={TutoringDetailsPage} />

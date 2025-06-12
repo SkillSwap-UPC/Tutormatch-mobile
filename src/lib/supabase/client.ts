@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import 'react-native-url-polyfill/auto';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../config/env';
+import { EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_PUBLIC_SUPABASE_URL } from '../../config/env';
 
 // Verificar que las constantes estén definidas
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+if (!EXPO_PUBLIC_SUPABASE_URL || !EXPO_PUBLIC_SUPABASE_ANON_KEY) {
   throw new Error('SUPABASE_URL y SUPABASE_ANON_KEY deben estar configurados en config/env.ts');
 }
 
@@ -78,13 +78,13 @@ const supabaseOptions = {
 
 // Crear el cliente con la configuración mejorada
 export const supabase = createClient(
-  SUPABASE_URL, 
-  SUPABASE_ANON_KEY, 
+  EXPO_PUBLIC_SUPABASE_URL, 
+  EXPO_PUBLIC_SUPABASE_ANON_KEY, 
   supabaseOptions
 );
 
-export const supabaseUrl = SUPABASE_URL;
-export const supabaseAnonKey = SUPABASE_ANON_KEY;
+export const supabaseUrl = EXPO_PUBLIC_SUPABASE_URL;
+export const supabaseAnonKey = EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 // Monkeypatching global para evitar problemas con localStorage
 if (typeof global !== 'undefined' && !global.localStorage) {

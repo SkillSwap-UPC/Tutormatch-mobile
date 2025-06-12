@@ -3,24 +3,24 @@ import { Text, TextInput } from 'react-native';
 
 export function patchReactNativeText() {
   try {
-    if (Text) {
-      // @ts-ignore
-      if (!Text.defaultProps) {
-        // @ts-ignore
-        Text.defaultProps = {};
+    // Patch Text component using type assertion
+    if (Text && typeof Text === 'function') {
+      const textComponent = Text as any;
+      
+      if (!textComponent.defaultProps) {
+        textComponent.defaultProps = {};
       }
-      // @ts-ignore
-      Text.defaultProps.allowFontScaling = false;
+      textComponent.defaultProps.allowFontScaling = false;
     }
     
-    if (TextInput) {
-      // @ts-ignore
-      if (!TextInput.defaultProps) {
-        // @ts-ignore
-        TextInput.defaultProps = {};
+    // Patch TextInput component using type assertion
+    if (TextInput && typeof TextInput === 'function') {
+      const textInputComponent = TextInput as any;
+      
+      if (!textInputComponent.defaultProps) {
+        textInputComponent.defaultProps = {};
       }
-      // @ts-ignore
-      TextInput.defaultProps.allowFontScaling = false;
+      textInputComponent.defaultProps.allowFontScaling = false;
     }
     
     console.log('Successfully patched React Native Text components');

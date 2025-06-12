@@ -1,12 +1,12 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
+import { Text } from '../../../utils/TextFix';
 import { TutoringReview } from '../../types/Tutoring';
 
 interface ReviewCardProps {

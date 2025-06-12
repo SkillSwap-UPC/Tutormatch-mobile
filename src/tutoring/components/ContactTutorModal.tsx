@@ -1,15 +1,15 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  Linking,
-  Modal,
-  StyleSheet,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    Linking,
+    Modal,
+    StyleSheet,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 import { User } from '../../user/types/User';
+import { Text } from '../../utils/TextFix';
 
 interface ContactTutorModalProps {
   visible: boolean;

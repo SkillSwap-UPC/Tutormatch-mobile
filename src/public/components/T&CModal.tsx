@@ -1,13 +1,13 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { Text } from '../../utils/TextFix';
 
 import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    Modal,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 interface TermsModalProps {

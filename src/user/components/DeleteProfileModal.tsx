@@ -1,13 +1,13 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Modal,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Modal,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
+import { Text } from '../../utils/TextFix';
 
 interface DeleteAccountModalProps {
   visible: boolean;

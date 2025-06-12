@@ -1,4 +1,3 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,7 +13,9 @@ import {
   View
 } from 'react-native';
 import DashboardLayout from '../../dashboard/components/DashboardLayout';
+import Navbar from '../../dashboard/components/Navbar';
 import { useAuth } from '../../public/hooks/useAuth';
+import { Text } from '../../utils/TextFix';
 
 // Tipos de solicitud de soporte
 const supportTypes = [
@@ -145,37 +146,40 @@ Enviado desde la aplicación móvil de TutorMatch
       }, 2000);
     }, 1000);
   };
-
   // Si el formulario se envió con éxito
   if (success) {
     return (
-      <DashboardLayout>
-        <View style={styles.successContainer}>
-          <Ionicons name="checkmark-circle" size={64} color="#4CAF50" style={styles.successIcon} />
-          <Text style={styles.successTitle}>¡Solicitud Enviada!</Text>
-          <Text style={styles.successMessage}>
-            Hemos preparado tu solicitud de soporte. Se ha abierto tu cliente de correo para que puedas enviar el mensaje directamente.
-          </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('Dashboard')}
-          >
-            <Text style={styles.buttonText}>Volver al Inicio</Text>
-          </TouchableOpacity>
-        </View>
-      </DashboardLayout>
+      <>
+        <Navbar />
+        <DashboardLayout>
+          <View style={styles.successContainer}>
+            <Ionicons name="checkmark-circle" size={64} color="#4CAF50" style={styles.successIcon} />
+            <Text style={styles.successTitle}>¡Solicitud Enviada!</Text>
+            <Text style={styles.successMessage}>
+              Hemos preparado tu solicitud de soporte. Se ha abierto tu cliente de correo para que puedas enviar el mensaje directamente.
+            </Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate('Dashboard')}
+            >
+              <Text style={styles.buttonText}>Volver al Inicio</Text>
+            </TouchableOpacity>
+          </View>
+        </DashboardLayout>
+      </>
     );
   }
-
   return (
-    <DashboardLayout>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Centro de Soporte</Text>
-          <Text style={styles.headerSubtitle}>
-            Estamos aquí para ayudarte. Completa el formulario a continuación y nuestro equipo te responderá lo antes posible.
-          </Text>
-        </View>
+    <>
+      <Navbar />
+      <DashboardLayout>
+        <ScrollView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Centro de Soporte</Text>
+            <Text style={styles.headerSubtitle}>
+              Estamos aquí para ayudarte. Completa el formulario a continuación y nuestro equipo te responderá lo antes posible.
+            </Text>
+          </View>
 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -194,7 +198,9 @@ Enviado desde la aplicación móvil de TutorMatch
             <View style={styles.formRow}>
               {/* Nombre - Autocompletado y deshabilitado */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Nombre completo <Text style={styles.requiredAsterisk}>*</Text></Text>
+                <Text style={styles.label}>Nombre completo 
+                  <Text style={styles.requiredAsterisk}>*</Text>
+                  </Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
                   value={formData.name}
@@ -208,7 +214,9 @@ Enviado desde la aplicación móvil de TutorMatch
             <View style={styles.formRow}>
               {/* Email - Autocompletado y deshabilitado */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Correo electrónico <Text style={styles.requiredAsterisk}>*</Text></Text>
+                <Text style={styles.label}>Correo electrónico 
+                  <Text style={styles.requiredAsterisk}>*</Text>
+                  </Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
                   value={formData.email}
@@ -236,7 +244,9 @@ Enviado desde la aplicación móvil de TutorMatch
             <View style={styles.formRow}>
               {/* Tipo de soporte */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Tipo de consulta <Text style={styles.requiredAsterisk}>*</Text></Text>
+                <Text style={styles.label}>Tipo de consulta 
+                  <Text style={styles.requiredAsterisk}>*</Text>
+                  </Text>
                 <TouchableOpacity 
                   style={styles.dropdown}
                   onPress={() => setShowSupportTypeDropdown(!showSupportTypeDropdown)}
@@ -331,10 +341,11 @@ Enviado desde la aplicación móvil de TutorMatch
               <Text style={styles.contactLabel}>Horario de atención</Text>
               <Text style={styles.contactValue}>Lunes a Viernes: 9:00 am - 6:00 pm</Text>
             </View>
+          </View>        
           </View>
-        </View>
       </ScrollView>
     </DashboardLayout>
+    </>
   );
 };
 

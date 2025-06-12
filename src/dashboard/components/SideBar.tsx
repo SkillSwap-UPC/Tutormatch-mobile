@@ -1,14 +1,12 @@
-import { Text } from '@/src/utils/TextFix';
 import {
   FontAwesome5,
   Ionicons,
   MaterialCommunityIcons,
   MaterialIcons
-} from '@expo/vector-icons'; // Librería de iconos incorporada
+} from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useEffect, useRef, useState } from 'react';
-
 import {
   ActivityIndicator,
   Animated,
@@ -22,6 +20,7 @@ import {
   View
 } from 'react-native';
 import { useAuth } from '../../public/hooks/useAuth';
+import { Text } from '../../utils/TextFix';
 import { SemesterService } from '../services/SemesterService';
 
 // Iconos disponibles para asignar a los semestres (usando @expo/vector-icons)
@@ -41,6 +40,7 @@ const getIconByIndex = (index: number) => {
 
 // Interfaz para semestres ya formateados
 interface FormattedSemester {
+  id: string | number;
   icon: React.ReactNode;
   semester: string;
   path: keyof RootStackParamList;
@@ -48,6 +48,8 @@ interface FormattedSemester {
 
 interface SidebarProps {
   style?: any;
+  visible?: boolean;
+  onClose?: () => void;
 }
 // Define the navigation param list type
 type RootStackParamList = {
@@ -58,28 +60,28 @@ type RootStackParamList = {
   ForgotPassword: undefined;
   Register: undefined;
   CreateTutoring: undefined;
-  TutoringDetail: { id: string };
+  TutoringDetails: { tutoringId: string };
+  TutoringsBySemester: { semesterId: string };
   SemesterDetail: { semesterId: string };
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ style }) => {
+const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) => {
   const { user, signOut } = useAuth();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const [loading, setLoading] = useState(true);
   const [semesters, setSemesters] = useState<FormattedSemester[]>([]);
   const slideAnim = useRef(new Animated.Value(-300)).current;
-  
+
   useEffect(() => {
     const updateLayout = () => {
       const { width } = Dimensions.get('window');
       setIsMobile(width < 768);
     };
-    
+
     const subscription = Dimensions.addEventListener('change', updateLayout);
     updateLayout();
-    
+
     return () => {
       subscription.remove();
     };
@@ -89,26 +91,25 @@ const Sidebar: React.FC<SidebarProps> = ({ style }) => {
     const loadSemesters = async () => {
       try {
         setLoading(true);
-        const data = await SemesterService.getSemesters();
-        
-        if (Array.isArray(data)) {
+        const data = await SemesterService.getSemesters();        if (Array.isArray(data)) {
           const formattedSemesters = data.map((sem, index) => {
             const match = sem.name.match(/(\d+)/);
             const semNumber = match ? parseInt(match[1]) - 1 : index;
-            
+
             return {
+              id: sem.id, // ✅ Conservar el ID real del semestre
               icon: getIconByIndex(semNumber),
               semester: sem.name,
-              path: 'SemesterDetail' as keyof RootStackParamList
+              path: 'TutoringsBySemester' as keyof RootStackParamList
             };
           });
-          
+
           const sortedSemesters = formattedSemesters.sort((a, b) => {
             const numA = parseInt(a.semester.match(/\d+/)?.[0] || '0');
             const numB = parseInt(b.semester.match(/\d+/)?.[0] || '0');
             return numA - numB;
           });
-          
+
           setSemesters(sortedSemesters);
         }
       } catch (error) {
@@ -123,16 +124,17 @@ const Sidebar: React.FC<SidebarProps> = ({ style }) => {
 
   useEffect(() => {
     Animated.timing(slideAnim, {
-      toValue: isOpen ? 0 : -300,
+      toValue: visible ? 0 : -300,
       duration: 300,
       easing: Easing.ease,
       useNativeDriver: true
     }).start();
-  }, [isOpen, slideAnim]);
+  }, [visible, slideAnim]);
+
 
   const handleLinkPress = (path: keyof RootStackParamList, params?: any) => {
-    if (isMobile) {
-      setIsOpen(false);
+    if (isMobile && onClose) {
+      onClose();
     }
     navigation.navigate(path, params);
   };
@@ -146,146 +148,116 @@ const Sidebar: React.FC<SidebarProps> = ({ style }) => {
       });
     }
   };
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
     <>
-      {isMobile && !isOpen && (
-        <TouchableOpacity 
-          style={styles.openButton}
-          onPress={toggleSidebar}
-          accessibilityLabel="Abrir menú"
-        >
-          <MaterialIcons name="chevron-right" size={24} color="#fff" />
-        </TouchableOpacity>
-      )}
-      
-      {isMobile && isOpen && (
-        <TouchableOpacity 
+      {/* El sidebar siempre se renderiza pero se muestra/oculta con visible */}
+      {isMobile && visible && (
+        <TouchableOpacity
           style={styles.overlay}
-          onPress={() => setIsOpen(false)}
+          onPress={() => onClose && onClose()}
           activeOpacity={1}
         />
       )}
 
-      <Animated.View 
-        style={[
-          styles.sidebar,
-          { transform: [{ translateX: slideAnim }] },
-          style
-        ]}
-      >
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../assets/imgs/TutorMatch.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.logoText}>TutorMatch</Text>
-          </View>
-          <TouchableOpacity onPress={() => setIsOpen(false)}>
-            <MaterialIcons name="close" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputContainer}>
-            <MaterialIcons name="search" size={18} color="#9ca3af" style={styles.searchIcon} />
-            <TextInput 
-              style={styles.searchInput}
-              placeholder="Buscar cualquier curso"
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
-        </View>
-
-        {user?.role === 'tutor' && (
-          <View style={styles.addButtonContainer}>
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={() => handleLinkPress('CreateTutoring')}
-            >
-              <Text style={styles.addButtonText}>Añadir Tutoría</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {user && (
-          <View style={styles.userInfoContainer}>
-            <View style={styles.userProfile}>
-              {user.avatar ? (
-                <Image source={{ uri: user.avatar }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarInitial}>{user.firstName?.charAt(0) || 'U'}</Text>
-                </View>
-              )}
-              <View style={styles.userDetails}>
-                <Text style={styles.userName}>
-                  {user.firstName} {user.lastName}
-                </Text>
-                <Text style={styles.userEmail}>
-                  {user.email}
-                </Text>
+      {/* Sidebar - solo se muestra cuando visible es true */}
+      {visible && (
+        <Animated.View
+          style={[
+            styles.sidebar,
+            { transform: [{ translateX: slideAnim }] },
+            style
+          ]}
+        >
+          {/* Búsqueda prominente */}
+          <View style={styles.searchSection}>
+            <View style={styles.searchContainer}>
+              <View style={styles.searchInputContainer}>
+                <MaterialIcons name="search" size={20} color="#9ca3af" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Buscar cualquier curso o tutoría..."
+                  placeholderTextColor="#9ca3af"
+                />
               </View>
             </View>
-
-            <View style={styles.userMeta}>
-              <Text style={styles.userRole}>
-                {user.role === 'tutor' ? 'Tutor' : 'Estudiante'} • {user.academicYear || '4º Semestre'}
-              </Text>
-              <TouchableOpacity onPress={() => handleLinkPress('Profile')}>
-                <Text style={styles.viewProfile}>Ver perfil completo</Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        )}
-
-        <ScrollView style={styles.semesterContainer}>
-          <Text style={styles.sectionTitle}>Ingeniería de Software</Text>
-          
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#f05c5c" />
-            </View>
-          ) : semesters.length > 0 ? (
-            semesters.map((item, index) => (
+          {user?.role === 'tutor' && (
+            <View style={styles.addButtonContainer}>
               <TouchableOpacity
-                key={index}
-                style={styles.semesterItem}
-                onPress={() => handleLinkPress(item.path, { semesterId: index + 1 })}
+                style={styles.addButton}
+                onPress={() => handleLinkPress('CreateTutoring')}
               >
-                <View style={styles.semesterIcon}>{item.icon}</View>
-                <Text style={styles.semesterText}>{item.semester}</Text>
+                <Text style={styles.addButtonText}>Añadir Tutoría</Text>
               </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.noSemesters}>No hay semestres disponibles</Text>
+            </View>
           )}
-        </ScrollView>
 
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.footerButton}
-            onPress={() => handleLinkPress('Support')}
-          >
-            <MaterialIcons name="help-outline" size={18} color="#f05c5c" style={styles.footerIcon} />
-            <Text style={styles.footerButtonText}>Soporte / Ayuda</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <MaterialIcons name="logout" size={18} color="#f05c5c" style={styles.footerIcon} />
-            <Text style={styles.logoutText}>Cerrar sesión</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+          {user && (
+            <View style={styles.userInfoContainer}>
+              <View style={styles.userProfile}>
+                {user.avatar ? (
+                  <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarInitial}>{user.firstName?.charAt(0) || 'U'}</Text>
+                  </View>
+                )}
+                <View style={styles.userDetails}>
+                  <Text style={styles.userName}>
+                    {user.firstName} {user.lastName}
+                  </Text>
+                  <Text style={styles.userEmail}>
+                    {user.email}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.userMeta}>
+                <Text style={styles.userRole}>
+                  {user.role === 'tutor' ? 'Tutor' : 'Estudiante'} • {user.academicYear || '4º Semestre'}
+                </Text>
+              </View>
+              <View style={styles.userMeta}>
+                <TouchableOpacity onPress={() => handleLinkPress('Profile')}>
+                  <Text style={styles.viewProfile}>Ver perfil completo</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          <ScrollView style={styles.semesterContainer}>
+            <Text style={styles.sectionTitle}>Ingeniería de Software</Text>
+
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#f05c5c" />
+              </View>
+            ) : semesters.length > 0 ? (              semesters.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.semesterItem}
+                  onPress={() => handleLinkPress(item.path, { semesterId: item.id.toString() })}
+                >
+                  <View style={styles.semesterIcon}>{item.icon}</View>
+                  <Text style={styles.semesterText}>{item.semester}</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.noSemesters}>No hay semestres disponibles</Text>
+            )}
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <MaterialIcons name="logout" size={18} color="#f05c5c" style={styles.footerIcon} />
+              <Text style={styles.logoutText}>Cerrar sesión</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      )}
     </>
   );
 };
@@ -351,9 +323,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 18,
+  }, searchSection: {
+    backgroundColor: '#2a2a2a',
+    margin: 16,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 8,
+  },
+  searchTitle: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+    marginBottom: 12,
   },
   searchContainer: {
-    padding: 16,
+    marginBottom: 8,
   },
   searchInputContainer: {
     position: 'relative',

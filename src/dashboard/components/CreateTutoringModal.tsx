@@ -1,24 +1,24 @@
-import { Text } from '@/src/utils/TextFix';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Image,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Image,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Course } from '../../course/types/Course';
 import TimeSlotSelectorBySection from '../../schedule/components/TimeSelectorBySection';
 import { TutoringImageService } from '../../tutoring/services/TutoringImageService';
 import { TutoringService } from '../../tutoring/services/TutoringService';
 import { User } from '../../user/types/User';
+import { Text } from '../../utils/TextFix';
 import { SemesterService } from '../services/SemesterService';
 
 interface CreateTutoringModalProps {

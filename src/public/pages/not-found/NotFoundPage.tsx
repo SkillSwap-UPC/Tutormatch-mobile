@@ -1,7 +1,7 @@
-import { Text } from '@/src/utils/TextFix';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
+import { Text } from '../../../utils/TextFix';
 
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { RootStackParamList } from '../../../App';

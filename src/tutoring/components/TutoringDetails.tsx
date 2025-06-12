@@ -1,22 +1,22 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Course } from '../../course/types/Course';
 import DeleteTutoringModal from '../../dashboard/components/DeleteTutoringModal';
 import EditTutoringModal from '../../dashboard/components/EditTutoringModal';
 import Avatar from '../../user/components/Avatar';
 import { User } from '../../user/types/User';
+import { Text } from '../../utils/TextFix';
 import { TutoringService } from '../services/TutoringService';
 import { TutoringReview, TutoringSession } from '../types/Tutoring';
 import ContactTutorModal from './ContactTutorModal';

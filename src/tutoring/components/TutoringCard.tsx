@@ -1,12 +1,11 @@
-import { Text } from '@/src/utils/TextFix';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { UserService } from '../../user/services/UserService';
 import { User } from '../../user/types/User';
+import { Text } from '../../utils/TextFix';
 import { TutoringService } from '../services/TutoringService';
 import { TutoringSession } from '../types/Tutoring';
-
-import StarRating from 'react-native-star-rating';
 
 interface TutoringCardProps {
   tutoring: TutoringSession;
@@ -74,20 +73,21 @@ const TutoringCard: React.FC<TutoringCardProps> = ({ tutoring, onClick }) => {
         <Text style={styles.tutorName}>
          {loading ? 'Cargando...' : tutor ? `${tutor.firstName} ${tutor.lastName}` : 'Tutor desconocido'}
         </Text>
-      </View>
-
+      </View>      
       {/* Rating */}
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingValue}>{rating > 0 ? rating : '0.0'}</Text>
-        <StarRating
-          disabled={true}
-          maxStars={5}
-          rating={Math.round(rating)}
-          starSize={16}
-          fullStarColor="#F05C5C"
-          emptyStarColor="rgba(240, 92, 92, 0.4)"
-          containerStyle={styles.starRating}
-        />
+        <View style={styles.starRating}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Ionicons
+              key={star}
+              name={star <= Math.round(rating) ? 'star' : 'star-outline'}
+              size={16}
+              color="#F05C5C"
+              style={{ marginHorizontal: 1 }}
+            />
+          ))}
+        </View>
         <Text style={styles.reviewCount}>({reviewCount} reseñas)</Text>
       </View>
       
@@ -140,9 +140,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
     marginRight: 8,
-  },
-  starRating: {
-    width: 80,
+  },  starRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   reviewCount: {
     color: '#9CA3AF',

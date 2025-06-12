@@ -1,6 +1,6 @@
-import { Text } from '@/src/utils/TextFix';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Text } from '../../utils/TextFix';
 
 export default function NavbarAuth() {
   return (

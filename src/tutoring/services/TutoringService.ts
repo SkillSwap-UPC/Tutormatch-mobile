@@ -1,12 +1,8 @@
 import axios from 'axios';
 import { API_URL } from '../../config/env';
-import { supabase } from '../../lib/supabase/client';
 import { TutoringReview, TutoringSession } from '../types/Tutoring';
 import { TutoringImageService } from './TutoringImageService';
 
-/**
- * Función para convertir nombres de campos de camelCase (backend) a snake_case (Supabase)
- */
 const toSnakeCase = (data: any): any => {
   if (!data || typeof data !== 'object') return data;
 
@@ -74,376 +70,205 @@ const toCamelCase = (data: any): any => {
   return result;
 };
 
-/**
- * Función auxiliar para manejar errores de Supabase
- */
-const handleSupabaseError = (error: any, defaultMessage: string): never => {
-  console.error('Error de Supabase:', error);
-  throw new Error(error?.message || defaultMessage);
-};
-
 export const TutoringService = {
   // Obtener una tutoría por ID
   getTutoringSession: async (id: string): Promise<TutoringSession> => {
     try {
+      // Primero obtenemos los datos básicos de la tutoría
+      const response = await axios.get(`${API_URL}/tutoring-sessions/${id}`);
+
+      // Convertimos los datos de snake_case a camelCase
+      const tutoringData = toCamelCase(response.data);
+
+      // Luego obtenemos los horarios disponibles para esta tutoría usando la ruta correcta
       try {
-        const response = await axios.get(`${API_URL}/tutoring-sessions/${id}`);
-        const tutoringData = toCamelCase(response.data);
+        const timesResponse = await axios.get(`${API_URL}/tutoring-sessions/${id}/available-times`);
 
-        try {
-          const timesResponse = await axios.get(`${API_URL}/tutoring-sessions/${id}/available-times`);
-          const availableTimes = toCamelCase(timesResponse.data);
-          tutoringData.availableTimes = availableTimes;
-        } catch (timesError) {
-          console.warn('Error al obtener horarios a través de API:', timesError);
+        // Convertir los horarios de snake_case a camelCase
+        const availableTimes = toCamelCase(timesResponse.data);
 
-          try {
-            const { data: timesData, error: timesError } = await supabase
-              .from('available_times')
-              .select('*')
-              .eq('tutoring_id', id);
-
-            if (timesError) throw timesError;
-
-            tutoringData.availableTimes = toCamelCase(timesData || []);
-          } catch (supabaseTimesError) {
-            console.warn('También falló la obtención de horarios desde Supabase:', supabaseTimesError);
-            tutoringData.availableTimes = [];
-          }
-        }
-
-        return new TutoringSession(tutoringData);
-      } catch (apiError) {
-        console.warn('Error al obtener tutoría a través de API, intentando con Supabase:', apiError);
-
-        const { data, error } = await supabase
-          .from('tutoring_sessions')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (error) throw error;
-
-        if (!data) {
-          throw new Error(`No se encontró tutoría con ID: ${id}`);
-        }
-
-        const { data: timesData, error: timesError } = await supabase
-          .from('available_times')
-          .select('*')
-          .eq('tutoring_id', id);
-
-        if (timesError) {
-          console.warn('Error al obtener horarios desde Supabase:', timesError);
-        }
-
-        const tutoringData = toCamelCase(data);
-        tutoringData.availableTimes = toCamelCase(timesData || []);
-
-        return new TutoringSession(tutoringData);
+        // Combinar los datos
+        tutoringData.availableTimes = availableTimes;
+      } catch (timesError) {
+        console.warn('Error al obtener horarios:', timesError);
+        tutoringData.availableTimes = [];
       }
+
+      return new TutoringSession(tutoringData);
     } catch (error) {
       console.error('Error al obtener tutoría:', error);
       throw error;
     }
   },
 
+  // Obtener todas las tutorías
   getAllTutoringSessions: async (): Promise<TutoringSession[]> => {
     try {
-      try {
-        const response = await axios.get(`${API_URL}/tutoring-sessions`);
-        const tutoringsData = toCamelCase(response.data);
+      const response = await axios.get(`${API_URL}/tutoring-sessions`);
 
-        const tutoringsWithTimes = await Promise.all(
-          tutoringsData.map(async (session: any) => {
-            try {
-              const timesResponse = await axios.get(
-                `${API_URL}/tutoring-sessions/${session.id}/available-times`
-              );
-              const availableTimes = toCamelCase(timesResponse.data);
+      // Convertir cada tutoría de snake_case a camelCase
+      const tutoringsData = toCamelCase(response.data);
 
-              return {
-                ...session,
-                availableTimes: availableTimes
-              };
-            } catch (error) {
-              console.warn(`Error al obtener horarios para tutoría ${session.id}:`, error);
-              return {
-                ...session,
-                availableTimes: []
-              };
-            }
-          })
-        );
+      // Para cada tutoría, intentar obtener sus horarios disponibles
+      const tutoringsWithTimes = await Promise.all(
+        tutoringsData.map(async (session: any) => {
+          try {
+            const timesResponse = await axios.get(
+              `${API_URL}/tutoring-sessions/${session.id}/available-times`
+            );
 
-        return tutoringsWithTimes.map((session: any) => new TutoringSession(session));
-      } catch (apiError) {
-        console.warn('Error al obtener tutorías a través de API, intentando con Supabase:', apiError);
+            // Convertir horarios de snake_case a camelCase
+            const availableTimes = toCamelCase(timesResponse.data);
 
-        const { data, error } = await supabase
-          .from('tutoring_sessions')
-          .select('*');
+            return {
+              ...session,
+              availableTimes: availableTimes
+            };
+          } catch (error) {
+            console.warn(`Error al obtener horarios para tutoría ${session.id}:`, error);
+            // Si falla, retornamos la sesión sin horarios
+            return {
+              ...session,
+              availableTimes: []
+            };
+          }
+        })
+      );
 
-        if (error) throw error;
-
-        const sessions = toCamelCase(data || []);
-
-        const sessionsWithTimes = await Promise.all(
-          sessions.map(async (session: any) => {
-            try {
-              const { data: timesData } = await supabase
-                .from('available_times')
-                .select('*')
-                .eq('tutoring_id', session.id);
-
-              return {
-                ...session,
-                availableTimes: toCamelCase(timesData || [])
-              };
-            } catch (error) {
-              console.warn(`Error al obtener horarios para tutoría ${session.id} desde Supabase:`, error);
-              return {
-                ...session,
-                availableTimes: []
-              };
-            }
-          })
-        );
-
-        return sessionsWithTimes.map((session: any) => new TutoringSession(session));
-      }
+      return tutoringsWithTimes.map((session: any) => new TutoringSession(session));
     } catch (error) {
       console.error('Error al obtener tutorías:', error);
       throw error;
     }
   },
 
+  // Obtener tutorías por tutorId
   getTutoringSessionsByTutorId: async (tutorId: string): Promise<TutoringSession[]> => {
     try {
-      try {
-        const response = await axios.get(`${API_URL}/tutoring-sessions`, {
-          params: { tutorId }
-        });
-        const tutoringsData = toCamelCase(response.data);
+      const response = await axios.get(`${API_URL}/tutoring-sessions`, {
+        params: { tutorId }
+      });
 
-        const tutoringsWithTimes = await Promise.all(
-          tutoringsData.map(async (session: any) => {
-            try {
-              const timesResponse = await axios.get(
-                `${API_URL}/tutoring-sessions/${session.id}/available-times`
-              );
-              const availableTimes = toCamelCase(timesResponse.data);
+      // Convertir cada tutoría de snake_case a camelCase
+      const tutoringsData = toCamelCase(response.data);
 
-              return {
-                ...session,
-                availableTimes: availableTimes
-              };
-            } catch (error) {
-              console.warn(`Error al obtener horarios para tutoría ${session.id}:`, error);
-              return {
-                ...session,
-                availableTimes: []
-              };
-            }
-          })
-        );
+      // Para cada tutoría, intentar obtener sus horarios disponibles
+      const tutoringsWithTimes = await Promise.all(
+        tutoringsData.map(async (session: any) => {
+          try {
+            const timesResponse = await axios.get(
+              `${API_URL}/tutoring-sessions/${session.id}/available-times`
+            );
 
-        return tutoringsWithTimes.map((session: any) => new TutoringSession(session));
-      } catch (apiError) {
-        console.warn('Error al obtener tutorías por tutor a través de API, intentando con Supabase:', apiError);
+            // Convertir horarios de snake_case a camelCase
+            const availableTimes = toCamelCase(timesResponse.data);
 
-        const { data, error } = await supabase
-          .from('tutoring_sessions')
-          .select('*')
-          .eq('tutor_id', tutorId);
+            return {
+              ...session,
+              availableTimes: availableTimes
+            };
+          } catch (error) {
+            console.warn(`Error al obtener horarios para tutoría ${session.id}:`, error);
+            return {
+              ...session,
+              availableTimes: []
+            };
+          }
+        })
+      );
 
-        if (error) throw error;
-
-        const sessions = toCamelCase(data || []);
-
-        const sessionsWithTimes = await Promise.all(
-          sessions.map(async (session: any) => {
-            try {
-              const { data: timesData } = await supabase
-                .from('available_times')
-                .select('*')
-                .eq('tutoring_id', session.id);
-
-              return {
-                ...session,
-                availableTimes: toCamelCase(timesData || [])
-              };
-            } catch (error) {
-              console.warn(`Error al obtener horarios para tutoría ${session.id} desde Supabase:`, error);
-              return {
-                ...session,
-                availableTimes: []
-              };
-            }
-          })
-        );
-
-        return sessionsWithTimes.map((session: any) => new TutoringSession(session));
-      }
+      return tutoringsWithTimes.map((session: any) => new TutoringSession(session));
     } catch (error) {
       console.error('Error al obtener tutorías por tutor:', error);
       throw error;
     }
   },
 
+  // Obtener tutorías por courseId
   getTutoringSessionsByCourseId: async (courseId: string): Promise<TutoringSession[]> => {
     try {
-      try {
-        const response = await axios.get(`${API_URL}/tutoring-sessions`, {
-          params: { courseId }
-        });
-        const tutoringsData = toCamelCase(response.data);
+      const response = await axios.get(`${API_URL}/tutoring-sessions`, {
+        params: { courseId }
+      });
 
-        const tutoringsWithTimes = await Promise.all(
-          tutoringsData.map(async (session: any) => {
-            try {
-              const timesResponse = await axios.get(
-                `${API_URL}/tutoring-sessions/${session.id}/available-times`
-              );
-              const availableTimes = toCamelCase(timesResponse.data);
+      // Convertir cada tutoría de snake_case a camelCase
+      const tutoringsData = toCamelCase(response.data);
 
-              return {
-                ...session,
-                availableTimes: availableTimes
-              };
-            } catch (error) {
-              console.warn(`Error al obtener horarios para tutoría ${session.id}:`, error);
-              return {
-                ...session,
-                availableTimes: []
-              };
-            }
-          })
-        );
+      // Para cada tutoría, intentar obtener sus horarios disponibles
+      const tutoringsWithTimes = await Promise.all(
+        tutoringsData.map(async (session: any) => {
+          try {
+            const timesResponse = await axios.get(
+              `${API_URL}/tutoring-sessions/${session.id}/available-times`
+            );
 
-        return tutoringsWithTimes.map((session: any) => new TutoringSession(session));
-      } catch (apiError) {
-        console.warn('Error al obtener tutorías por curso a través de API, intentando con Supabase:', apiError);
+            // Convertir horarios de snake_case a camelCase
+            const availableTimes = toCamelCase(timesResponse.data);
 
-        const { data, error } = await supabase
-          .from('tutoring_sessions')
-          .select('*')
-          .eq('course_id', courseId);
+            return {
+              ...session,
+              availableTimes: availableTimes
+            };
+          } catch (error) {
+            console.warn(`Error al obtener horarios para tutoría ${session.id}:`, error);
+            return {
+              ...session,
+              availableTimes: []
+            };
+          }
+        })
+      );
 
-        if (error) throw error;
-
-        const sessions = toCamelCase(data || []);
-
-        const sessionsWithTimes = await Promise.all(
-          sessions.map(async (session: any) => {
-            try {
-              const { data: timesData } = await supabase
-                .from('available_times')
-                .select('*')
-                .eq('tutoring_id', session.id);
-
-              return {
-                ...session,
-                availableTimes: toCamelCase(timesData || [])
-              };
-            } catch (error) {
-              console.warn(`Error al obtener horarios para tutoría ${session.id} desde Supabase:`, error);
-              return {
-                ...session,
-                availableTimes: []
-              };
-            }
-          })
-        );
-
-        return sessionsWithTimes.map((session: any) => new TutoringSession(session));
-      }
+      return tutoringsWithTimes.map((session: any) => new TutoringSession(session));
     } catch (error) {
       console.error('Error al obtener tutorías por curso:', error);
       throw error;
     }
   },
 
+  // Obtener reseñas de una tutoría
   getReviews: async (tutoringId: string): Promise<TutoringReview[]> => {
     try {
-      try {
-        const response = await axios.get(`${API_URL}/tutoring-sessions/${tutoringId}/reviews`);
 
-        if (!response.data || !Array.isArray(response.data)) {
-          console.warn('No se recibieron reseñas o el formato es incorrecto');
-          return [];
-        }
+      // Usar la ruta correcta para obtener las reseñas de la tutoría específica
+      const response = await axios.get(`${API_URL}/tutoring-sessions/${tutoringId}/reviews`);
 
-        const reviewsData = toCamelCase(response.data);
-
-        const reviewsWithStudents = await Promise.all(
-          reviewsData.map(async (review: any) => {
-            try {
-              const studentId = review.studentId;
-
-              if (!studentId) {
-                console.warn('Reseña sin ID de estudiante:', review);
-                return review;
-              }
-
-              const studentResponse = await axios.get(`${API_URL}/profiles/${studentId}`);
-              const studentData = toCamelCase(studentResponse.data);
-
-              return {
-                ...review,
-                student: studentData
-              };
-            } catch (error) {
-              console.warn(`Error al obtener datos del estudiante:`, error);
-              return review;
-            }
-          })
-        );
-
-        return reviewsWithStudents.map((review: any) => new TutoringReview(review));
-      } catch (apiError) {
-        console.warn('Error al obtener reseñas a través de API, intentando con Supabase:', apiError);
-
-        const { data, error } = await supabase
-          .from('tutoring_reviews')
-          .select('*')
-          .eq('tutoring_id', tutoringId);
-
-        if (error) throw error;
-
-        const reviews = toCamelCase(data || []);
-
-        const reviewsWithStudents = await Promise.all(
-          reviews.map(async (review: any) => {
-            try {
-              if (!review.studentId) {
-                return review;
-              }
-
-              const { data: studentData, error: studentError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', review.studentId)
-                .single();
-
-              if (studentError) {
-                console.warn(`Error al obtener datos del estudiante desde Supabase:`, studentError);
-                return review;
-              }
-
-              return {
-                ...review,
-                student: toCamelCase(studentData)
-              };
-            } catch (error) {
-              console.warn(`Error general al obtener datos del estudiante:`, error);
-              return review;
-            }
-          })
-        );
-
-        return reviewsWithStudents.map((review: any) => new TutoringReview(review));
+      // Si no hay reseñas, devolver un array vacío
+      if (!response.data || !Array.isArray(response.data)) {
+        console.warn('No se recibieron reseñas o el formato es incorrecto');
+        return [];
       }
+
+      // Convertir reseñas de snake_case a camelCase
+      const reviewsData = toCamelCase(response.data);
+
+      // Para cada reseña, obtener los datos del estudiante
+      const reviewsWithStudents = await Promise.all(
+        reviewsData.map(async (review: any) => {
+          try {
+            const studentId = review.studentId;
+
+            if (!studentId) {
+              console.warn('Reseña sin ID de estudiante:', review);
+              return review;
+            }
+
+            const studentResponse = await axios.get(`${API_URL}/profiles/${studentId}`);
+            // Convertir datos del estudiante de snake_case a camelCase
+            const studentData = toCamelCase(studentResponse.data);
+
+            return {
+              ...review,
+              student: studentData
+            };
+          } catch (error) {
+            console.warn(`Error al obtener datos del estudiante:`, error);
+            return review;
+          }
+        })
+      );
+
+      return reviewsWithStudents.map((review: any) => new TutoringReview(review));
     } catch (error) {
       console.error('Error al obtener reseñas:', error);
       return [];
@@ -452,14 +277,16 @@ export const TutoringService = {
 
   createTutoring: async (tutoring: any): Promise<TutoringSession> => {
     try {
+
+      // Preparar el objeto con los campos en camelCase como espera el backend
       const tutoringPayload = {
         tutorId: tutoring.tutorId,
         courseId: tutoring.courseId,
         title: tutoring.title || tutoring.courseName,
         description: tutoring.description,
         price: Number(tutoring.price),
-        whatTheyWillLearn: Array.isArray(tutoring.whatTheyWillLearn) ? 
-          tutoring.whatTheyWillLearn : 
+        whatTheyWillLearn: Array.isArray(tutoring.whatTheyWillLearn) ?
+          tutoring.whatTheyWillLearn :
           tutoring.whatTheyWillLearn.split('\n').map((item: string) => item.trim()).filter(Boolean),
         imageUrl: tutoring.imageUrl || "",
         availableTimes: tutoring.availableTimes.map((slot: any) => ({
@@ -469,81 +296,12 @@ export const TutoringService = {
         }))
       };
 
-      try {
-        const response = await axios.post(`${API_URL}/tutoring-sessions`, tutoringPayload);
-        const createdTutoring = response.data;
-        return new TutoringSession(createdTutoring);
-      } catch (apiError) {
-        console.warn('Error al crear tutoría a través de API, intentando con Supabase:', apiError);
+      // Hacer la petición con formato camelCase
+      const response = await axios.post(`${API_URL}/tutoring-sessions`, tutoringPayload);
 
-        const tutoringSnakeCase = toSnakeCase({
-          tutor_id: tutoring.tutorId,
-          course_id: tutoring.courseId,
-          title: tutoring.title || tutoring.courseName,
-          description: tutoring.description,
-          price: Number(tutoring.price),
-          what_they_will_learn: Array.isArray(tutoring.whatTheyWillLearn) ? 
-            tutoring.whatTheyWillLearn : 
-            tutoring.whatTheyWillLearn.split('\n').map((item: string) => item.trim()).filter(Boolean),
-          image_url: tutoring.imageUrl || "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-        const { data, error } = await supabase
-          .from('tutoring_sessions')
-          .insert(tutoringSnakeCase)
-          .single();
-
-        if (error) throw error;
-
-        if (!data) {
-          throw new Error('No se recibieron datos después de crear la tutoría');
-        }
-
-        const createdTutoringId = data.id;
-
-        if (tutoring.availableTimes && tutoring.availableTimes.length > 0) {
-          const timesData = tutoring.availableTimes.map((time: any) => ({
-            tutoring_id: createdTutoringId,
-            day_of_week: time.dayOfWeek,
-            start_time: time.startTime,
-            end_time: time.endTime,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }));
-
-          const { error: timesError } = await supabase
-            .from('available_times')
-            .insert(timesData);
-
-          if (timesError) {
-            console.error('Error al crear horarios disponibles:', timesError);
-          }
-        }
-
-        const { data: fullTutoring, error: getTutoringError } = await supabase
-          .from('tutoring_sessions')
-          .select('*')
-          .eq('id', createdTutoringId)
-          .single();
-
-        if (getTutoringError) throw getTutoringError;
-
-        const { data: availableTimes, error: getTimesError } = await supabase
-          .from('available_times')
-          .select('*')
-          .eq('tutoring_id', createdTutoringId);
-
-        if (getTimesError) {
-          console.warn('Error al obtener horarios:', getTimesError);
-        }
-
-        const tutoringData = toCamelCase(fullTutoring);
-        tutoringData.availableTimes = toCamelCase(availableTimes || []);
-
-        return new TutoringSession(tutoringData);
-      }
+      // Procesar la respuesta
+      const createdTutoring = response.data;
+      return new TutoringSession(createdTutoring);
     } catch (error) {
       console.error('Error al crear tutoría:', error);
 
@@ -558,8 +316,11 @@ export const TutoringService = {
     }
   },
 
+  // Actualizar una tutoría
   updateTutoring: async (tutoringId: string, updates: any): Promise<TutoringSession> => {
     try {
+
+      // Convertir campos a camelCase para la API
       const updateData = {
         ...(updates.image_url !== undefined && { imageUrl: updates.image_url }),
         ...(updates.imageUrl !== undefined && { imageUrl: updates.imageUrl }),
@@ -568,54 +329,71 @@ export const TutoringService = {
         ...(updates.description !== undefined && { description: updates.description }),
         ...(updates.price !== undefined && { price: Number(updates.price) }),
         ...(updates.title !== undefined && { title: updates.title }),
+        ...(updates.available_times !== undefined && { availableTimes: updates.available_times }),
+        ...(updates.availableTimes !== undefined && { availableTimes: updates.availableTimes }),
+
       };
 
-      try {
-        const response = await axios.patch(
-          `${API_URL}/tutoring-sessions/${tutoringId}`,
-          updateData
-        );
 
-        const updatedTutoring = toCamelCase(response.data);
+      const response = await axios.patch(
+        `${API_URL}/tutoring-sessions/${tutoringId}`,
+        updateData
+      );
 
-        return new TutoringSession(updatedTutoring);
-      } catch (apiError) {
-        console.warn('Error al actualizar tutoría a través de API, intentando con Supabase:', apiError);
+      // Convertir respuesta de snake_case a camelCase
+      const updatedTutoring = toCamelCase(response.data);
 
-        const updateDataSnakeCase = toSnakeCase({
-          ...updateData,
-          updated_at: new Date().toISOString()
-        });
-
-        const { data, error } = await supabase
-          .from('tutoring_sessions')
-          .update(updateDataSnakeCase)
-          .eq('id', tutoringId)
-          .single();
-
-        if (error) throw error;
-
-        return await TutoringService.getTutoringSession(tutoringId);
-      }
+      return new TutoringSession(updatedTutoring);
     } catch (error) {
       console.error('Error al actualizar tutoría:', error);
       throw error;
     }
   },
 
+  // Añadir una reseña a una tutoría
+  addReview: async (tutoringId: string, review: any): Promise<any> => {
+    try {
+
+      // Preparar el payload para el backend - en camelCase
+      const reviewData = {
+        tutoringId: tutoringId,
+        studentId: review.studentId || review.student_id,
+        rating: Number(review.rating),
+        comment: review.comment
+      };
+
+
+      const response = await axios.post(
+        `${API_URL}/tutoring-sessions/reviews`,
+        reviewData
+      );
+
+      // Convertir respuesta de snake_case a camelCase
+      const createdReview = toCamelCase(response.data);
+
+      return new TutoringReview(createdReview);
+    } catch (error) {
+      console.error('Error al agregar reseña:', error);
+      throw error;
+    }
+  },
+
   deleteTutoring: async (tutoringId: string): Promise<boolean> => {
     try {
+
       try {
+        // 1. Primero obtenemos información de la tutoría para saber qué recursos eliminar
         const tutoringResponse = await axios.get(`${API_URL}/tutoring-sessions/${tutoringId}`);
         const tutoringData = tutoringResponse.data;
 
+        // 2. Eliminar horarios disponibles
         try {
           const timesResponse = await axios.get(`${API_URL}/tutoring-sessions/${tutoringId}/available-times`);
           const times = timesResponse.data;
 
           if (times && times.length > 0) {
             await Promise.all(
-              times.map((time: any) => 
+              times.map((time: any) =>
                 axios.delete(`${API_URL}/tutoring-sessions/available-times/${time.id}`)
               )
             );
@@ -624,13 +402,14 @@ export const TutoringService = {
           console.warn('Error al eliminar horarios disponibles:', timesError);
         }
 
+        // 3. Eliminar reseñas
         try {
           const reviewsResponse = await axios.get(`${API_URL}/tutoring-sessions/${tutoringId}/reviews`);
           const reviews = reviewsResponse.data;
 
           if (reviews && reviews.length > 0) {
             await Promise.all(
-              reviews.map((review: any) => 
+              reviews.map((review: any) =>
                 axios.delete(`${API_URL}/tutoring-sessions/reviews/${review.id}`)
               )
             );
@@ -639,13 +418,14 @@ export const TutoringService = {
           console.warn('Error al eliminar reseñas:', reviewsError);
         }
 
+        // 4. Eliminar materiales
         try {
           const materialsResponse = await axios.get(`${API_URL}/tutoring-sessions/${tutoringId}/materials`);
           const materials = materialsResponse.data;
 
           if (materials && materials.length > 0) {
             await Promise.all(
-              materials.map((material: any) => 
+              materials.map((material: any) =>
                 axios.delete(`${API_URL}/tutoring-sessions/materials/${material.id}`)
               )
             );
@@ -654,6 +434,7 @@ export const TutoringService = {
           console.warn('Error al eliminar materiales:', materialsError);
         }
 
+        // 5. Eliminar la imagen de la tutoría si existe
         try {
           if (tutoringData.imageUrl) {
             const imageUrlParts = tutoringData.imageUrl.split('/');
@@ -665,10 +446,13 @@ export const TutoringService = {
         } catch (imageError) {
           console.warn('Error al eliminar imagen:', imageError);
         }
+
       } catch (relatedError) {
         console.warn('Error al eliminar elementos relacionados:', relatedError);
+        // Continuamos con la eliminación de la tutoría aunque falle la eliminación de elementos relacionados
       }
 
+      // 6. Finalmente, eliminar la tutoría principal
       await axios.delete(`${API_URL}/tutoring-sessions/${tutoringId}`);
 
       return true;
@@ -677,4 +461,5 @@ export const TutoringService = {
       throw error;
     }
   }
+
 };

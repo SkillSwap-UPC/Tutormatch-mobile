@@ -1,9 +1,9 @@
-import { Text } from '@/src/utils/TextFix';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { createClient } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
+import { Text } from '../../../utils/TextFix';
 
 import {
   ActivityIndicator,
@@ -15,7 +15,7 @@ import {
   View
 } from 'react-native';
 import { RootStackParamList } from '../../../App';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../../../config/env';
+import { EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_PUBLIC_SUPABASE_URL } from '../../../config/env';
 import NavbarAuth from '../../components/NavbarAuth';
 
 export default function ResetPasswordPage() {
@@ -30,8 +30,8 @@ export default function ResetPasswordPage() {
 
   // Initialize Supabase client
   const supabase = createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    EXPO_PUBLIC_SUPABASE_URL,
+    EXPO_PUBLIC_SUPABASE_ANON_KEY
   );
 
   useEffect(() => {
