@@ -3,23 +3,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Course } from '../../course/types/Course';
 import DeleteTutoringModal from '../../dashboard/components/DeleteTutoringModal';
 import EditTutoringModal from '../../dashboard/components/EditTutoringModal';
 import Avatar from '../../user/components/Avatar';
+import { UserService } from '../../user/services/UserService';
 import { User } from '../../user/types/User';
 import { Text } from '../../utils/TextFix';
 import { TutoringService } from '../services/TutoringService';
 import { TutoringReview, TutoringSession } from '../types/Tutoring';
 import ContactTutorModal from './ContactTutorModal';
+import CreateReviewModal from './Review/CreateReviewModal';
 import ReviewList from './Review/ReviewList';
 
 interface TutoringDetailsProps {
@@ -37,11 +39,12 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
 }) => {
   const { title, description, price, whatTheyWillLearn, imageUrl, availableTimes, tutorId } = tutoring;
   const [averageRating, setAverageRating] = useState<number>(0);
-  const navigation = useNavigation<any>();
-  const [isOwner, setIsOwner] = useState<boolean>(false);
+  const navigation = useNavigation<any>();  const [isOwner, setIsOwner] = useState<boolean>(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [editModalVisible, setEditModalVisible] = useState<boolean>(false);
   const [contactModalVisible, setContactModalVisible] = useState<boolean>(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<{
     visible: boolean;
@@ -70,10 +73,25 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
         console.error('Error al verificar propiedad de la tutoría:', error);
         setIsOwner(false);
       }
+    };    checkOwnership();
+  }, [tutorId, tutor]);
+
+  // Cargar usuario actual
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const currentUserId = await AsyncStorage.getItem('currentUserId');
+        if (currentUserId) {
+          const userData = await UserService.getUserById(currentUserId);
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('Error al cargar usuario actual:', error);
+      }
     };
 
-    checkOwnership();
-  }, [tutorId, tutor]);
+    loadCurrentUser();
+  }, []);
 
   // Mostrar toast
   const displayToast = (message: string, type: 'success' | 'error') => {
@@ -107,7 +125,6 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
       setLoading(false);
     }
   };
-
   const handleUpdateTutoring = () => {
     // En React Native no podemos recargar la página como en web
     // Una alternativa es volver a cargar los datos
@@ -118,6 +135,42 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
     //   index: 0,
     //   routes: [{ name: navigation.getCurrentRoute().name, params: { refresh: true } }],
     // });
+  };
+
+  const handleReviewCreated = () => {
+    // Simular recarga de datos - podrías implementar una función para recargar reviews
+    displayToast('Reseña enviada correctamente', 'success');
+    
+    // Opcional: recargar los datos de la página
+    // navigation.replace(navigation.getCurrentRoute().name, { tutoringId: tutoring.id });
+  };
+  const handleReviewUpdated = () => {
+    // Simular recarga de datos - podrías implementar una función para recargar reviews
+    displayToast('Reseña actualizada correctamente', 'success');
+    
+    // Recargar la página para mostrar cambios
+    setTimeout(() => {
+      const currentRoute = navigation.getState().routes[navigation.getState().index];
+      navigation.replace(currentRoute.name, currentRoute.params);
+    }, 1000);
+  };
+  const handleReviewDeleted = () => {
+    // Simular recarga de datos - podrías implementar una función para recargar reviews
+    displayToast('Reseña eliminada correctamente', 'success');
+    
+    // Recargar la página para mostrar cambios
+    setTimeout(() => {
+      const currentRoute = navigation.getState().routes[navigation.getState().index];
+      navigation.replace(currentRoute.name, currentRoute.params);
+    }, 1000);
+  };
+
+  const canLeaveReview = (): boolean => {
+    if (!currentUser || isOwner) return false;
+    
+    // Verificar si el usuario ya dejó una reseña
+    const hasReviewed = reviews.some(review => review.studentId === currentUser.id);
+    return !hasReviewed;
   };
 
   // Calculate average rating from reviews
@@ -249,10 +302,10 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
   const StarRating = ({ rating }: { rating: number }) => {
     return (
       <View style={styles.starContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map((star) => (          
           <Ionicons
             key={star}
-            name={star <= Math.round(rating) ? 'star' : 'star-outline'}
+            name={star <= Math.round(rating) ? 'star' as any : 'star-outline' as any}
             size={16}
             color="#FFC107"
           />
@@ -271,8 +324,7 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
         onDelete={handleDeleteTutoring}
         tutoring={tutoring}
       />
-      
-      {isOwner && (
+        {isOwner && (
         <EditTutoringModal
           visible={editModalVisible}
           onHide={() => setEditModalVisible(false)}
@@ -282,8 +334,16 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
         />
       )}
       
+      <CreateReviewModal
+        visible={reviewModalVisible}
+        onHide={() => setReviewModalVisible(false)}
+        onReviewCreated={handleReviewCreated}
+        tutoringId={tutoring.id}
+        currentUser={currentUser}
+        tutorName={tutor ? `${tutor.firstName} ${tutor.lastName}` : undefined}
+      />
+      
       <ScrollView style={styles.scrollView}>
-        {/* Header con información básica */}
         <View style={styles.header}>
           <View style={styles.badgeContainer}>
             {course && (
@@ -320,29 +380,26 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
             <Text style={styles.reviewCount}>
               ({reviews.length} reseñas)
             </Text>
-          </View>
-
+          </View>          
           <View style={styles.tutorContainer}>
             {tutor && (
               <View style={styles.tutorInfo}>
                 <Avatar user={tutor} size="sm" />
-                <TouchableOpacity 
-                  onPress={() => navigation.navigate('Profile', { userId: tutor.id })}
-                  style={styles.tutorName}
-                >
-                  <Text style={styles.tutorNameText}>{getTutorName()}</Text>
-                </TouchableOpacity>
+                <View style={styles.tutorDetails}>
+                  <TouchableOpacity 
+                    onPress={() => navigation.navigate('Profile', { userId: tutor.id })}
+                    style={styles.tutorName}                  >
+                    <Text style={styles.tutorNameText}>{getTutorName()}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>
         </View>
 
-        {/* Contenido principal */}
         <View style={styles.content}>
           <View style={styles.mainContentWrapper}>
-            {/* Contenido izquierdo (aprendizaje + horarios + reseñas) */}
             <View style={styles.leftContent}>
-              {/* Sección: What you will learn */}
               <View style={styles.card}>
                 <Text style={styles.sectionTitle}>Lo que aprenderás</Text>
                 <View style={styles.learningGrid}>
@@ -359,7 +416,6 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
                 </View>
               </View>
 
-              {/* Sección: Horarios disponibles */}
               <View style={styles.card}>
                 <Text style={styles.sectionTitle}>Horarios disponibles del tutor</Text>
                 
@@ -400,13 +456,40 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
                     ))}
                   </View>
                 </ScrollView>
-              </View>
-
-              {/* Sección: Reseñas */}
+              </View>              
               <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Reseñas de estudiantes</Text>
+                <View style={styles.reviewsHeaderContainer}>
+                  <View style={styles.reviewsMainHeader}>
+                    <View style={styles.reviewsTitleContainer}>
+                      <Text style={styles.reviewsSectionTitle}>Reseñas de estudiantes</Text>
+                    </View>
+                    {canLeaveReview() && width > 320 && (
+                      <TouchableOpacity
+                        style={styles.addReviewButton}
+                        onPress={() => setReviewModalVisible(true)}
+                      >
+                        <Ionicons name="add" size={14} color="white" />
+                        <Text style={styles.addReviewButtonText}>Añadir</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  {canLeaveReview() && width <= 320 && (
+                    <TouchableOpacity
+                      style={[styles.addReviewButton, styles.addReviewButtonFullWidth]}
+                      onPress={() => setReviewModalVisible(true)}
+                    >
+                      <Ionicons name="add" size={16} color="white" />
+                      <Text style={styles.addReviewButtonText}>Añadir reseña</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>                
                 {reviews && reviews.length > 0 ? (
-                  <ReviewList reviews={reviews} />
+                  <ReviewList 
+                    reviews={reviews} 
+                    onReviewUpdated={handleReviewUpdated}
+                    onReviewDeleted={handleReviewDeleted}
+                  />
                 ) : (
                   <Text style={styles.noReviewsText}>
                     Aún no hay reseñas. ¡Sé el primero en dejar una reseña!
@@ -415,7 +498,6 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
               </View>
             </View>
 
-            {/* Sidebar de imagen, precio y botón - En móvil, va primero */}
             <View style={styles.sidebarCard}>
               <Image
                 source={{ uri: imageUrl || defaultImageUrl }}
@@ -425,7 +507,6 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
               <Text style={styles.sidebarTitle}>{title}</Text>
               <Text style={styles.price}>S/. {price.toFixed(2)}</Text>
               
-              {/* Cambiar entre "Solicitar Tutoría" y "Editar Tutoría" según isOwner */}
               {isOwner ? (
                 <TouchableOpacity
                   style={styles.editButton}
@@ -445,7 +526,6 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
                 </TouchableOpacity>
               )}
               
-              {/* Opción alternativa: Mostrar el botón de eliminar debajo del botón de solicitar */}
               {isOwner && (
                 <TouchableOpacity
                   style={styles.deleteButton}
@@ -473,14 +553,12 @@ const TutoringDetails: React.FC<TutoringDetailsProps> = ({
         </View>
       </ScrollView>
 
-      {/* Modal para contactar al tutor */}
       <ContactTutorModal 
         visible={contactModalVisible}
         onHide={() => setContactModalVisible(false)}
         tutor={tutor}
       />
       
-      {/* Loading overlay */}
       {loading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#F05C5C" />
@@ -576,13 +654,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
-  },
-  tutorInfo: {
+  },  tutorInfo: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  tutorDetails: {
+    marginLeft: 12,
+    flex: 1,
   },
   tutorName: {
-    marginLeft: 8,
+    marginBottom: 4,
   },
   tutorNameText: {
     color: '#F05C5C',
@@ -605,12 +686,13 @@ const styles = StyleSheet.create({
     borderColor: '#4a4a4a',
     padding: 16,
     marginBottom: 16,
-  },
-  sectionTitle: {
+  },  sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: 'white',
     marginBottom: 16,
+    flex: 1,
+    flexShrink: 1,
   },
   learningGrid: {
     flexDirection: 'column',
@@ -781,13 +863,61 @@ const styles = StyleSheet.create({
   toastText: {
     color: 'white',
     textAlign: 'center',
-  },
-  loadingOverlay: {
+  },  loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
+  },  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  reviewsHeaderContainer: {
+    marginBottom: 16,
+  },
+  reviewsMainHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reviewsTitleContainer: {
+    flex: 1,
+    minWidth: 0, // Permite que el texto se ajuste
+  },
+  reviewsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
+    marginBottom: 0,
+  },
+  addReviewButton: {
+    backgroundColor: '#F05C5C',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+    minWidth: 80,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  addReviewButtonFullWidth: {
+    width: '100%',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  addReviewButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 

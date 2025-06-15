@@ -68,12 +68,12 @@ const TutoringCard: React.FC<TutoringCardProps> = ({ tutoring, onClick }) => {
         {tutoring.title}
       </Text>
       
-      {/* Información del tutor */}
+      {/* Información del tutor */}      
       <View style={styles.tutorContainer}>
         <Text style={styles.tutorName}>
-         {loading ? 'Cargando...' : tutor ? `${tutor.firstName} ${tutor.lastName}` : 'Tutor desconocido'}
+         {loading ? 'Cargando...' : tutor ? `${tutor.firstName || ''} ${tutor.lastName || ''}`.trim() || 'Tutor desconocido' : 'Tutor desconocido'}
         </Text>
-      </View>      
+      </View>
       {/* Rating */}
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingValue}>{rating > 0 ? rating : '0.0'}</Text>
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tutorName: {
-    color: '#8B5CF6',
+    color: '#c92020',
     fontSize: 14,
   },
   ratingContainer: {

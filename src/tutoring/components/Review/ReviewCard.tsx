@@ -1,21 +1,117 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 import {
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Text } from '../../../utils/TextFix';
+import { TutoringService } from '../../services/TutoringService';
 import { TutoringReview } from '../../types/Tutoring';
 
 interface ReviewCardProps {
   review: TutoringReview;
+  onReviewUpdated?: () => void;
+  onReviewDeleted?: () => void;
 }
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+const ReviewCard: React.FC<ReviewCardProps> = ({ review, onReviewUpdated, onReviewDeleted }) => {
   const [likes, setLikes] = useState<number>(review.likes || 0);
   const [liked, setLiked] = useState<boolean>(false);
+  const [isOwner, setIsOwner] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedComment, setEditedComment] = useState<string>(review.comment || '');
+  const [editedRating, setEditedRating] = useState<number>(review.rating);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Verificar si el usuario actual es el propietario de la reseña
+  useEffect(() => {
+    const checkOwnership = async () => {
+      try {
+        const currentUserId = await AsyncStorage.getItem('currentUserId');
+        if (currentUserId && review.studentId) {
+          setIsOwner(currentUserId === review.studentId.toString());
+        }
+      } catch (error) {
+        console.error('Error al verificar propiedad de la reseña:', error);
+      }
+    };
+
+    checkOwnership();
+  }, [review.studentId]);
+
+  const handleEditSave = async () => {
+    if (editedComment.trim().length < 10) {
+      Alert.alert('Error', 'El comentario debe tener al menos 10 caracteres');
+      return;
+    }
+
+    if (editedRating === 0) {
+      Alert.alert('Error', 'Debes seleccionar una calificación');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await TutoringService.updateReview(review.id, {
+        rating: editedRating,
+        comment: editedComment.trim()
+      });
+
+      Alert.alert('Éxito', 'Tu reseña ha sido actualizada correctamente');
+      setIsEditing(false);
+      
+      if (onReviewUpdated) {
+        onReviewUpdated();
+      }
+    } catch (error: any) {
+      console.error('Error al actualizar reseña:', error);
+      Alert.alert('Error', 'No se pudo actualizar la reseña');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditedComment(review.comment || '');
+    setEditedRating(review.rating);
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Confirmar eliminación',
+      '¿Estás seguro de que quieres eliminar esta reseña?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await TutoringService.deleteReview(review.id);
+              Alert.alert('Éxito', 'Tu reseña ha sido eliminada correctamente');
+              
+              if (onReviewDeleted) {
+                onReviewDeleted();
+              }
+            } catch (error: any) {
+              console.error('Error al eliminar reseña:', error);
+              Alert.alert('Error', 'No se pudo eliminar la reseña');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   const handleLike = () => {
     if (!liked) {
@@ -45,11 +141,12 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
           source={{ uri: review.student.avatar }}
           style={styles.avatar}
         />
-      ) : (
-        <View style={styles.avatarPlaceholder}>
+      ) : (        
+      <View style={styles.avatarPlaceholder}>
           <Text style={styles.avatarText}>
-            {review.student?.firstName?.charAt(0)?.toUpperCase()}
-            {review.student?.lastName?.charAt(0)?.toUpperCase()}
+            {(review.student?.firstName?.charAt(0)?.toUpperCase() || '') + 
+             (review.student?.lastName?.charAt(0)?.toUpperCase() || '') || 
+             'U'}
           </Text>
         </View>
       )}
@@ -59,10 +156,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   const RatingDisplay = () => (
     <View style={styles.ratingContainer}>
       <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map((star) => (          
           <Ionicons
             key={star}
-            name={star <= review.rating ? 'star' : 'star-outline'}
+            name={star <= review.rating ? 'star' as any : 'star-outline' as any}
             size={16}
             color="#FFC107"
           />
@@ -72,49 +169,118 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
     </View>
   );
 
+  const EditableRatingDisplay = () => (
+    <View style={styles.ratingContainer}>
+      <View style={styles.starsContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => setEditedRating(star)}
+            style={styles.editStarButton}
+          >            
+          <Ionicons
+              name={star <= editedRating ? 'star' as any : 'star-outline' as any}
+              size={20}
+              color={star <= editedRating ? "#F05C5C" : "#9CA3AF"}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+      <Text style={styles.ratingText}>{editedRating}/5</Text>
+    </View>
+  );
+
   return (
     <View style={styles.card}>
-      {/* Header */}
       <View style={styles.header}>
-        <StudentAvatar />
+        <StudentAvatar />        
         <View style={styles.headerInfo}>
           <Text style={styles.studentName}>
-            {review.student?.firstName + ' ' + review.student?.lastName} 
+            {`${review.student?.firstName || ''} ${review.student?.lastName || ''}`.trim() || 'Usuario anónimo'}
           </Text>
           <Text style={styles.date}>{formatDate(review.createdAt)}</Text>
         </View>
-      </View>
-
+        
+        {/* Opciones para el propietario */}
+        {isOwner && !isEditing && (
+          <View style={styles.ownerActions}>
+            <TouchableOpacity
+              onPress={() => setIsEditing(true)}
+              style={styles.actionButton}
+            >
+              <Ionicons name="create-outline" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={styles.actionButton}
+            >
+              <Ionicons name="trash-outline" size={20} color="#F05C5C" />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>      
       <View style={styles.content}>
-        <RatingDisplay />
+        {isEditing ? <EditableRatingDisplay /> : <RatingDisplay />}
 
-        {/* Comentario */}
         <View style={styles.commentContainer}>
-          <Text style={styles.comment}>{review.comment || 'Sin comentarios adicionales.'}</Text>
+          {isEditing ? (
+            <TextInput
+              value={editedComment}
+              onChangeText={setEditedComment}
+              placeholder="Escribe tu comentario..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              style={styles.editCommentInput}
+              maxLength={500}
+            />
+          ) : (
+            <Text style={styles.comment}>{review.comment || 'Sin comentarios adicionales.'}</Text>
+          )}
         </View>
 
-        {/* Likes */}
-        <View style={styles.likesContainer}>
-          <TouchableOpacity
-            onPress={handleLike}
-            style={[
-              styles.likeButton,
-              liked ? styles.likedButton : {}
-            ]}
-          >
-            <Ionicons
-              name="heart"
-              size={16}
-              color={liked ? '#FFFFFF' : '#9CA3AF'}
-              style={styles.heartIcon}
-              solid={liked}
-            />
-            <Text style={[styles.likeButtonText, liked ? styles.likedButtonText : {}]}>
-              {liked ? 'Te gusta' : 'Me gusta'}
-            </Text>
-          </TouchableOpacity>
-          <Text style={styles.likesCount}>{likes} {likes === 1 ? 'like' : 'likes'}</Text>
-        </View>
+        {isEditing && (
+          <View style={styles.editActions}>
+            <TouchableOpacity
+              onPress={handleEditCancel}
+              style={styles.cancelEditButton}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.cancelEditButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleEditSave}
+              style={[styles.saveEditButton, isSubmitting && styles.saveEditButtonDisabled]}
+              disabled={isSubmitting || editedComment.trim().length < 10}
+            >
+              <Text style={styles.saveEditButtonText}>
+                {isSubmitting ? 'Guardando...' : 'Guardar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {!isEditing && (
+          <View style={styles.likesContainer}>
+            <TouchableOpacity
+              onPress={handleLike}
+              style={[
+                styles.likeButton,
+                liked ? styles.likedButton : {}
+              ]}
+            >
+              <Ionicons
+                name="heart"
+                size={16}
+                color={liked ? '#FFFFFF' : '#9CA3AF'}
+                style={styles.heartIcon}
+              />
+              <Text style={[styles.likeButtonText, liked ? styles.likedButtonText : {}]}>
+                {liked ? 'Te gusta' : 'Me gusta'}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.likesCount}>{likes} {likes === 1 ? 'like' : 'likes'}</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -160,6 +326,7 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     marginLeft: 16,
+    flex: 1,
   },
   studentName: {
     fontSize: 16,
@@ -229,6 +396,62 @@ const styles = StyleSheet.create({
   likesCount: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+  ownerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+  },
+  actionButton: {
+    padding: 8,
+    marginLeft: 8,
+    borderRadius: 6,
+    backgroundColor: 'rgba(156, 163, 175, 0.1)',
+  },
+  editStarButton: {
+    padding: 4,
+  },
+  editCommentInput: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+  editActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+    gap: 12,
+  },
+  cancelEditButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
+    backgroundColor: 'transparent',
+  },
+  cancelEditButtonText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  saveEditButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    backgroundColor: '#F05C5C',
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  saveEditButtonDisabled: {
+    backgroundColor: '#4a4a4a',
+  },
+  saveEditButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

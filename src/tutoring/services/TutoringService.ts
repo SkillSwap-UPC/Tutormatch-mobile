@@ -349,7 +349,6 @@ export const TutoringService = {
       throw error;
     }
   },
-
   // Añadir una reseña a una tutoría
   addReview: async (tutoringId: string, review: any): Promise<any> => {
     try {
@@ -374,6 +373,39 @@ export const TutoringService = {
       return new TutoringReview(createdReview);
     } catch (error) {
       console.error('Error al agregar reseña:', error);
+      throw error;
+    }
+  },
+
+  // Actualizar una reseña existente
+  updateReview: async (reviewId: string, review: any): Promise<any> => {
+    try {
+      const reviewData = {
+        rating: Number(review.rating),
+        comment: review.comment
+      };
+
+      const response = await axios.patch(
+        `${API_URL}/tutoring-sessions/reviews/${reviewId}`,
+        reviewData
+      );
+
+      // Convertir respuesta de snake_case a camelCase
+      const updatedReview = toCamelCase(response.data);
+
+      return new TutoringReview(updatedReview);
+    } catch (error) {
+      console.error('Error al actualizar reseña:', error);
+      throw error;
+    }
+  },
+
+  // Eliminar una reseña
+  deleteReview: async (reviewId: string): Promise<void> => {
+    try {
+      await axios.delete(`${API_URL}/tutoring-sessions/reviews/${reviewId}`);
+    } catch (error) {
+      console.error('Error al eliminar reseña:', error);
       throw error;
     }
   },

@@ -122,7 +122,7 @@ export class AuthService {
             if (token) {
                 try {
                     // Intentar actualizar usando la API
-                    await axios.put(`${API_URL}/profile`, profileData, {
+                    await axios.patch(`${API_URL}/profile`, profileData, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }

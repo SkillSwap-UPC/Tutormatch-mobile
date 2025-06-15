@@ -20,6 +20,7 @@ import Navbar from '../components/Navbar';
 type RootStackParamList = {
   TutoringDetails: { tutoringId: string};
   Profile: undefined;
+  TutorTutorings: { tutorId: string };
 };
 
 const DashboardPage: React.FC = () => {
@@ -78,9 +79,9 @@ const DashboardPage: React.FC = () => {
                   resizeMode="cover"
                 />
               ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarInitial}>
-                    {user.firstName?.charAt(0) || user.lastName?.charAt(0) || 'U'}
+                <View style={styles.avatarPlaceholder}>                  
+                <Text style={styles.avatarInitial}>
+                    {(user.firstName?.charAt(0) || user.lastName?.charAt(0) || 'U').toUpperCase()}
                   </Text>
                 </View>
               )}
@@ -94,12 +95,22 @@ const DashboardPage: React.FC = () => {
               </Text>
               <Text style={styles.userAcademicYear}>{user.academicYear || 'No especificado'}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.profileButton}
-              onPress={() => navigation.navigate('Profile')}
-            >
-              <Text style={styles.profileButtonText}>Ver perfil</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.profileButton}
+                onPress={() => navigation.navigate('Profile')}
+              >
+                <Text style={styles.profileButtonText}>Ver perfil</Text>
+              </TouchableOpacity>
+              {user.role === 'tutor' && (
+                <TouchableOpacity
+                  style={styles.TutoringsButton}
+                  onPress={() => navigation.navigate('TutorTutorings', { tutorId: user.id })}
+                >
+                  <Text style={styles.TutoringsButtonText}>Ver Tutorías</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
       )}
@@ -232,14 +243,35 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontSize: 14,
   },
+  buttonContainer: {
+    width: '100%',
+    gap: 12,
+  },
   profileButton: {
     backgroundColor: '#f05c5c',
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 4,
-  },  profileButtonText: {
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%',
+  },  
+  profileButtonText: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  TutoringsButton: {
+    backgroundColor: '#16a34a',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%',
+  },
+  TutoringsButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
   sectionTitle: {
     color: 'white',
@@ -252,7 +284,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 24,
     alignItems: 'center',
-  },  emptyStateText: {
+  },
+  emptyStateText: {
     color: '#9ca3af',
     textAlign: 'center',
   },

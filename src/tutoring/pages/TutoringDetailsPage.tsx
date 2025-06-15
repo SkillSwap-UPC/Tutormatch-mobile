@@ -1,6 +1,9 @@
+import BottomNavbar from '@/src/dashboard/components/BottomNavbar';
+import Navbar from '@/src/dashboard/components/Navbar';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CourseService } from '../../course/services/CourseService';
 import { Course } from '../../course/types/Course';
 import { UserService } from '../../user/services/UserService';
@@ -21,14 +24,19 @@ const TutoringDetailsPage: React.FC = () => {
   // Usar useRoute para obtener los parámetros en lugar de useParams
   const route = useRoute<RouteProp<RouteParams, 'TutoringDetails'>>();
   const tutoringId = route.params?.tutoringId;
-  
+  const insets = useSafeAreaInsets();
+
   const [tutoring, setTutoring] = useState<TutoringSession | null>(null);
   const [reviews, setReviews] = useState<TutoringReview[]>([]);
   const [tutor, setTutor] = useState<User | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
 
+  const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible);
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -107,15 +115,18 @@ const TutoringDetailsPage: React.FC = () => {
       </View>
     );
   }
-
   return (
     <View style={styles.container}>
-      <TutoringDetails
-        tutoring={tutoring}
-        reviews={reviews}
-        tutor={tutor || undefined}
-        course={course || undefined}
-      />
+      <Navbar />
+      <View style={[styles.contentContainer, { paddingBottom: 80 + insets.bottom }]}>
+        <TutoringDetails
+          tutoring={tutoring}
+          reviews={reviews}
+          tutor={tutor || undefined}
+          course={course || undefined}
+        />
+      </View>
+      <BottomNavbar onToggleSidebar={toggleSidebar} />
     </View>
   );
 };
@@ -124,6 +135,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1e1e1e',
+  },
+  contentContainer: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,

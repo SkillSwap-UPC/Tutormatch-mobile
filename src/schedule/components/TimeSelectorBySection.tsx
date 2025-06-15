@@ -53,10 +53,14 @@ const TimeSlotSelectorBySection: React.FC<TimeSlotSelectorBySectionProps> = ({
   const isSelected = (day: string, timeSlot: string): boolean => {
     return !!selectedSlots[day]?.[timeSlot];
   };
-  
-  const renderTimeGrid = (timeSlots: string[]) => {
+    const renderTimeGrid = (timeSlots: string[]) => {
     return (
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+      <ScrollView 
+        horizontal={true} 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
+      >
         <View style={styles.gridContainer}>
           <View style={styles.headerRow}>
             <View style={styles.emptyCell} />
@@ -84,7 +88,11 @@ const TimeSlotSelectorBySection: React.FC<TimeSlotSelectorBySectionProps> = ({
                       ]}
                       onPress={() => toggleSlot(day, time)}
                     >
-                      {selected && <MaterialIcons name="check" size={16} color="white" />}
+                      {selected && (
+                        <View style={styles.checkIconContainer}>
+                          <MaterialIcons name="check" size={16} color="white" />
+                        </View>
+                      )}
                     </TouchableOpacity>
                   </View>
                 );
@@ -194,20 +202,32 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     marginTop: 8,
+    overflow: 'hidden',
+  },
+  scrollView: {
+    flexGrow: 0,
+  },
+  scrollContent: {
+    paddingRight: 16,
   },
   gridContainer: {
     flexDirection: 'column',
+    minWidth: '100%',
   },
   headerRow: {
     flexDirection: 'row',
     marginBottom: 8,
+    width: '100%',
   },
   emptyCell: {
     width: 60,
+    flexShrink: 0,
   },
   dayHeaderCell: {
     width: 50,
     alignItems: 'center',
+    flexShrink: 0,
+    flexGrow: 0,
   },
   dayHeaderText: {
     fontSize: 12,
@@ -219,10 +239,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 8,
     alignItems: 'center',
+    minHeight: 44,
+    width: '100%',
   },
   timeCell: {
     width: 60,
     justifyContent: 'center',
+    paddingRight: 8,
+    flexShrink: 0,
+    flexGrow: 0,
   },
   timeText: {
     fontSize: 12,
@@ -231,15 +256,27 @@ const styles = StyleSheet.create({
   },
   slotCellContainer: {
     width: 50,
+    height: 44,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    flexShrink: 0,
+    flexGrow: 0,
+    minWidth: 50, // Ancho mínimo fijo
+    maxWidth: 50, // Ancho máximo fijo
   },
   slotButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 6,
+    width: 32,
+    height: 32,
+    minWidth: 32, // Ancho mínimo fijo
+    maxWidth: 32, // Ancho máximo fijo
+    minHeight: 32, // Altura mínima fija
+    maxHeight: 32, // Altura máxima fija
+    borderRadius: 4,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden', // Previene expansión del contenido
   },
   selectedSlot: {
     backgroundColor: '#16a34a',
@@ -248,6 +285,17 @@ const styles = StyleSheet.create({
   unselectedSlot: {
     backgroundColor: '#1f1f1f',
     borderColor: '#4b5563',
+  },
+  checkIconContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 32,
+    height: 32,
   },
 });
 
