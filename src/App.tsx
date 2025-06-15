@@ -13,6 +13,7 @@ import NotFoundPage from './public/pages/not-found/NotFoundPage';
 import ProfilePage from './public/pages/profile/ProfilePage';
 import SupportPage from './support/pages/SupportPage';
 import TutoringDetailsPage from './tutoring/pages/TutoringDetailsPage';
+import TutorTutoringsPage from './tutoring/pages/TutorTutoringsPage';
 // import './utils/deepFix';
 // import { applyDeepPatches } from './utils/deepPatches';
 // import { patchReactNativeText } from './utils/patchText';
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   TutoringsBySemester: { semesterId: string };
   VerifyEmail: { email?: string; verified?: string; token?: string };
   TutoringDetails: { tutoringId: string };
+  TutorTutorings: { tutorId: string };
   Profile: { userId?: string };
   Support: undefined;
   ResetPassword: { token?: string };
@@ -56,6 +58,7 @@ const App = () => {
         <Stack.Screen name="RegisterSuccess" component={RegisterSuccessPage} />
         <Stack.Screen name="VerifyEmail" component={VerifyEmailPage} />
         <Stack.Screen name="TutoringDetails" component={TutoringDetailsPage} />
+        <Stack.Screen name="TutorTutorings" component={TutorTutoringsPage} />
         <Stack.Screen name="Profile" component={ProfilePage} />
         <Stack.Screen name="Support" component={SupportPage} />
         <Stack.Screen name="NotFound" component={NotFoundPage} />

@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Text } from '../../utils/TextFix';
 import { useAvatar } from '../hooks/avatarContext';
@@ -47,11 +47,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     if (name === 'phone') {
       // Solo permitir dígitos numéricos (0-9)
       const numericValue = value.replace(/[^0-9]/g, '');
-
-      // Validación específica para teléfonos peruanos que deben empezar con 9
       if (numericValue.length > 0 && numericValue[0] !== '9') {
         // Si no empieza con 9, forzar que empiece con 9
-        setFormData({ ...formData, [name]: '9' + numericValue.substring(numericValue.length > 1 ? 1 : 0) });
+        const adjustedValue = numericValue.length > 1 ? numericValue.substring(1) : '';
+        setFormData({ ...formData, [name]: '9' + adjustedValue });
       } else {
         setFormData({ ...formData, [name]: numericValue });
       }
@@ -159,21 +158,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         console.warn('No se pudo obtener el nombre del archivo del avatar:', e);
         throw new Error('No se pudo identificar el archivo de avatar para eliminar');
       }
-
-      // Aquí iría la llamada a tu API para eliminar el avatar
-      // Ejemplo ficticio:
-      // const deleteResponse = await UserService.deleteAvatar(formData.id, avatarFileName);
-
-      // Limpiar la imagen de perfil
       setProfileImage(undefined);
-
-      // Actualizar el formData
       setFormData(prevFormData => ({
         ...prevFormData,
         avatar: undefined
       }));
 
-      // Actualizar el avatar en el contexto
       updateAvatarUrl(null);
 
       Alert.alert('Éxito', 'Foto de perfil eliminada correctamente');
@@ -195,7 +185,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Editar Perfil</Text>
             <TouchableOpacity onPress={onHide} style={styles.closeButton}>
@@ -210,7 +199,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             showsVerticalScrollIndicator={true}
           >
             <View style={styles.contentContainer}>
-              {/* Foto de perfil */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Foto de Perfil</Text>
                 <View style={styles.profileImageContainer}>
@@ -253,7 +241,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 </View>
               </View>
 
-              {/* Nombre */}
               <View style={styles.section}>
                 <Text style={styles.label}>Nombre</Text>
                 <TextInput
@@ -263,7 +250,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 />
               </View>
 
-              {/* Apellido */}
               <View style={styles.section}>
                 <Text style={styles.label}>Apellido</Text>
                 <TextInput

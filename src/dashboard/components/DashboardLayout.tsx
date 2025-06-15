@@ -14,7 +14,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
-  };  return (
+  };  
+  return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#1e1e1e" barStyle="light-content" />
       
