@@ -50,6 +50,7 @@ interface SidebarProps {
   style?: any;
   visible?: boolean;
   onClose?: () => void;
+  onCreateTutoring?: () => void;
 }
 // Define the navigation param list type
 type RootStackParamList = {
@@ -59,13 +60,12 @@ type RootStackParamList = {
   Support: undefined;
   ForgotPassword: undefined;
   Register: undefined;
-  CreateTutoring: undefined;
   TutoringDetails: { tutoringId: string };
   TutoringsBySemester: { semesterId: string };
   SemesterDetail: { semesterId: string };
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose, onCreateTutoring }) => {
   const { user, signOut } = useAuth();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [isMobile, setIsMobile] = useState(true);
@@ -138,7 +138,6 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) =>
     }
     navigation.navigate(path, params);
   };
-
   const handleLogout = async () => {
     const result = await signOut();
     if (result.success) {
@@ -148,9 +147,20 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) =>
       });
     }
   };
+  const handleCreateTutoring = () => {
+    console.log('SideBar: handleCreateTutoring called', { onCreateTutoring: !!onCreateTutoring });
+    if (onCreateTutoring) {
+      onCreateTutoring();
+      // Cerrar el sidebar después de abrir el modal
+      if (onClose) {
+        onClose();
+      }
+    } else {
+      console.warn('SideBar: onCreateTutoring prop not provided');
+    }
+  };
   return (
     <>
-      {/* El sidebar siempre se renderiza pero se muestra/oculta con visible */}
       {isMobile && visible && (
         <TouchableOpacity
           style={styles.overlay}
@@ -159,7 +169,6 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) =>
         />
       )}
 
-      {/* Sidebar - solo se muestra cuando visible es true */}
       {visible && (
         <Animated.View
           style={[
@@ -180,13 +189,15 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) =>
                 />
               </View>
             </View>
-          </View>
+          </View>          
           {user?.role === 'tutor' && (
             <View style={styles.addButtonContainer}>
               <TouchableOpacity
                 style={styles.addButton}
-                onPress={() => handleLinkPress('CreateTutoring')}
+                onPress={handleCreateTutoring}
+                activeOpacity={0.8}
               >
+                <Ionicons name="add" size={20} color="white" style={styles.addButtonIcon} />
                 <Text style={styles.addButtonText}>Añadir Tutoría</Text>
               </TouchableOpacity>
             </View>
@@ -232,7 +243,8 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose }) =>
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#f05c5c" />
               </View>
-            ) : semesters.length > 0 ? (              semesters.map((item, index) => (
+            ) : semesters.length > 0 ? (              
+              semesters.map((item, index) => (
                 <TouchableOpacity
                   key={index}
                   style={styles.semesterItem}
@@ -362,12 +374,16 @@ const styles = StyleSheet.create({
   addButtonContainer: {
     paddingHorizontal: 16,
     marginBottom: 8,
-  },
-  addButton: {
+  },  addButton: {
     backgroundColor: '#f05c5c',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  addButtonIcon: {
+    marginRight: 8,
   },
   addButtonText: {
     color: 'white',

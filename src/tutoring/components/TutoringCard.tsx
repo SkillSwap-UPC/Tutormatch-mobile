@@ -68,7 +68,6 @@ const TutoringCard: React.FC<TutoringCardProps> = ({ tutoring, onClick }) => {
         {tutoring.title}
       </Text>
       
-      {/* Información del tutor */}      
       <View style={styles.tutorContainer}>
         <Text style={styles.tutorName}>
          {loading ? 'Cargando...' : tutor ? `${tutor.firstName || ''} ${tutor.lastName || ''}`.trim() || 'Tutor desconocido' : 'Tutor desconocido'}

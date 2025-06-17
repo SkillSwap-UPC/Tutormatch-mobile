@@ -6,29 +6,30 @@ import Sidebar from './SideBar';
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  onCreateTutoring?: () => void;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, onCreateTutoring }) => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const insets = useSafeAreaInsets();
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
-  };  
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#1e1e1e" barStyle="light-content" />
       
-      {/* Contenido principal con padding inferior para el bottom navbar */}
       <View style={[styles.mainContent, { paddingBottom: 80 + insets.bottom }]}>
         {children}
       </View>
 
-      {/* Bottom Navbar */}
-      <BottomNavbar onToggleSidebar={toggleSidebar} />
-
-      {/* Sidebar como modal/drawer */}
-      <Sidebar visible={sidebarVisible} onClose={() => setSidebarVisible(false)} />
+      <BottomNavbar onToggleSidebar={toggleSidebar} />      
+      <Sidebar 
+        visible={sidebarVisible} 
+        onClose={() => setSidebarVisible(false)}
+        onCreateTutoring={onCreateTutoring}
+      />
     </SafeAreaView>
   );
 };

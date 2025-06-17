@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../utils/TextFix';
 import { useAvatar } from '../hooks/avatarContext';
 import { UserService } from '../services/UserService';
@@ -34,6 +35,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [profileImage, setProfileImage] = useState<string | undefined>(user.avatar);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const { updateAvatarUrl } = useAvatar();
+  const insets = useSafeAreaInsets();
 
   // Reiniciar los datos del formulario cuando se abre el modal
   useEffect(() => {
@@ -58,11 +60,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setFormData({ ...formData, [name]: value });
     }
   };
-
   const handleSave = () => {
     onSave({ ...formData, avatar: profileImage });
     onHide();
     Alert.alert('Éxito', 'Perfil actualizado correctamente');
+  };
+
+  const handleCancel = () => {
+    // Resetear los datos al cancelar
+    setFormData(user);
+    setProfileImage(user.avatar);
+    onHide();
   };
 
   const handleImageUpload = async () => {
@@ -173,104 +181,111 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     } finally {
       setUploadingImage(false);
     }
-  };
-
-  return (
+  };  return (
     <Modal
-      transparent={true}
       visible={visible}
       animationType="slide"
-      onRequestClose={onHide}
+      transparent={true}
+      onRequestClose={handleCancel}
       statusBarTranslucent={true}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { paddingTop: insets.top + 20 }]}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Editar Perfil</Text>
-            <TouchableOpacity onPress={onHide} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#FFFFFF" />
+            <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
           {/* Content */}
           <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.contentContainer}
-            showsVerticalScrollIndicator={true}
+            style={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
           >
-            <View style={styles.contentContainer}>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Foto de Perfil</Text>
-                <View style={styles.profileImageContainer}>
-                  <View style={styles.avatarContainer}>
-                    {uploadingImage ? (
-                      <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="small" color="#FFFFFF" />
-                      </View>
-                    ) : profileImage ? (
-                      <Image
-                        source={{ uri: profileImage }}
-                        style={styles.avatarImage}
-                      />
-                    ) : (
-                      <Text style={styles.avatarPlaceholder}>
-                        {formData.firstName?.charAt(0) || formData.lastName?.charAt(0) || 'U'}
-                      </Text>
-                    )}
-                  </View>
-                  <View style={styles.imageActions}>
+            {/* Foto de Perfil */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Foto de Perfil</Text>
+              <View style={styles.profileImageContainer}>
+                <View style={styles.avatarContainer}>
+                  {uploadingImage && (
+                    <View style={styles.loadingOverlay}>
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    </View>
+                  )}
+                  {profileImage ? (
+                    <Image
+                      source={{ uri: profileImage }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <Text style={styles.avatarPlaceholder}>
+                      {formData.firstName?.charAt(0) || formData.lastName?.charAt(0) || 'U'}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.imageActions}>
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={handleImageUpload}
+                    disabled={uploadingImage}
+                  >
+                    <Ionicons name="camera" size={16} color="#FFFFFF" style={styles.buttonIcon} />
+                    <Text style={styles.uploadButtonText}>
+                      {uploadingImage ? 'Subiendo...' : 'Cambiar foto'}
+                    </Text>
+                  </TouchableOpacity>
+                  {profileImage && (
                     <TouchableOpacity
-                      style={styles.uploadButton}
-                      onPress={handleImageUpload}
+                      onPress={handleRemoveImage}
                       disabled={uploadingImage}
+                      style={styles.removeButton}
                     >
-                      <Text style={styles.uploadButtonText}>
-                        {uploadingImage ? 'Subiendo...' : 'Cambiar foto'}
-                      </Text>
+                      <Text style={styles.removeButtonText}>Eliminar foto</Text>
                     </TouchableOpacity>
-                    {profileImage && (
-                      <TouchableOpacity
-                        onPress={handleRemoveImage}
-                        disabled={uploadingImage}
-                        style={styles.removeButton}
-                      >
-                        <Text style={styles.removeButtonText}>Eliminar foto</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
+                  )}
                 </View>
               </View>
+            </View>
 
-              <View style={styles.section}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Información Personal</Text>
+              
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>Nombre</Text>
                 <TextInput
                   value={formData.firstName}
                   onChangeText={(value) => handleInputChange('firstName', value)}
                   style={styles.input}
+                  placeholder="Ingresa tu nombre"
+                  placeholderTextColor="#6B7280"
                 />
               </View>
 
-              <View style={styles.section}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>Apellido</Text>
                 <TextInput
                   value={formData.lastName}
                   onChangeText={(value) => handleInputChange('lastName', value)}
                   style={styles.input}
+                  placeholder="Ingresa tu apellido"
+                  placeholderTextColor="#6B7280"
                 />
               </View>
 
-              {/* Año académico */}
-              <View style={styles.section}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>Año Académico</Text>
                 <TextInput
                   value={formData.academicYear}
                   onChangeText={(value) => handleInputChange('academicYear', value)}
                   style={styles.input}
+                  placeholder="Ej: 2024"
+                  placeholderTextColor="#6B7280"
                 />
               </View>
 
-              {/* Teléfono */}
-              <View style={styles.section}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>
                   Teléfono
                   <Text style={styles.labelHint}> (Solo números, formato peruano)</Text>
@@ -279,17 +294,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   value={formData.phone}
                   onChangeText={(value) => handleInputChange('phone', value)}
                   style={styles.input}
-                  placeholder="Ejemplo: 999999999"
+                  placeholder="999999999"
+                  placeholderTextColor="#6B7280"
                   maxLength={9}
                   keyboardType="numeric"
                 />
                 <Text style={styles.inputHint}>
-                  Debe empezar con 9 y contener 9 dígitos sin espacios ni caracteres especiales.
+                  Debe empezar con 9 y contener 9 dígitos
                 </Text>
               </View>
 
-              {/* Biografía */}
-              <View style={styles.section}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>Biografía</Text>
                 <TextInput
                   value={formData.bio}
@@ -297,28 +312,30 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   style={[styles.input, styles.textArea]}
                   multiline
                   numberOfLines={4}
-                />
-              </View>
-
-              {/* Botones de acción */}
-              <View style={styles.footer}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={onHide}
-                  disabled={uploadingImage}
-                >
-                  <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={handleSave}
-                  disabled={uploadingImage}
-                >
-                  <Text style={styles.saveButtonText}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
+                  placeholder="Cuéntanos un poco sobre ti..."
+                  placeholderTextColor="#6B7280"
+                />              
+                </View>
             </View>
           </ScrollView>
+
+          {/* Botones de acción */}
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleCancel}
+              disabled={uploadingImage}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSave}
+              disabled={uploadingImage}
+            >
+              <Text style={styles.saveButtonText}>Guardar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -329,66 +346,70 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   modalContainer: {
-    width: '90%',
-    maxHeight: '80%',
-    backgroundColor: '#1f1f1f',
-    borderRadius: 8,
-    overflow: 'hidden',
+    backgroundColor: '#252525',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+    minHeight: '60%',
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#252525',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    zIndex: 10,
+    borderBottomColor: '#4a4a4a',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: '600',
+    color: '#FFFFFF',
+    flex: 1,
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(156, 163, 175, 0.2)',
   },
-  scrollView: {
+  scrollContent: {
     flex: 1,
-    width: '100%',
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 20,
+    paddingHorizontal: 16,
+  },  section: {
+    paddingVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
+    fontWeight: '500',
+    color: '#FFFFFF',
     marginBottom: 12,
   },
   profileImageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
+    marginBottom: 8,
+    padding: 16,
+    backgroundColor: '#1e1e1e',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
   },
   avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     backgroundColor: '#F05C5C',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#444',
+    borderWidth: 2,
+    borderColor: '#4a4a4a',
+    position: 'relative',
   },
   avatarImage: {
     width: '100%',
@@ -396,15 +417,16 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   avatarPlaceholder: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#FFFFFF',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   imageActions: {
     flex: 1,
@@ -412,68 +434,99 @@ const styles = StyleSheet.create({
   },
   uploadButton: {
     backgroundColor: '#F05C5C',
-    padding: 10,
-    borderRadius: 4,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  buttonIcon: {
+    marginRight: 4,
   },
   uploadButtonText: {
-    color: 'white',
-    fontWeight: '500',
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
   removeButton: {
-    marginTop: 8,
     alignItems: 'center',
+    padding: 8,
   },
   removeButtonText: {
     color: '#F05C5C',
     fontSize: 14,
+    fontWeight: '500',
+  },
+  inputGroup: {
+    marginBottom: 16,
   },
   label: {
     color: '#E5E7EB',
+    fontSize: 16,
+    fontWeight: '500',
     marginBottom: 8,
   },
   labelHint: {
     color: '#9CA3AF',
     fontSize: 12,
-  },
-  input: {
-    backgroundColor: '#252525',
-    color: 'white',
+    fontWeight: '400',
+  },  input: {
+    backgroundColor: '#1e1e1e',
+    color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#444',
-    borderRadius: 4,
-    padding: 10,
+    borderColor: '#4a4a4a',
+    borderRadius: 8,
+    padding: 14,
     fontSize: 16,
+    minHeight: 50,
   },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
+    paddingTop: 14,
   },
   inputHint: {
     color: '#9CA3AF',
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 6,
+    fontStyle: 'italic',
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 24,
-    gap: 12,
+    justifyContent: 'space-between',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#4a4a4a',
+    backgroundColor: '#252525',
   },
   cancelButton: {
-    padding: 10,
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
+    alignItems: 'center',
   },
   cancelButtonText: {
     color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '500',
   },
   saveButton: {
+    flex: 1,
     backgroundColor: '#F05C5C',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginLeft: 8,
+    alignItems: 'center',
   },
   saveButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '500',
   },
 });

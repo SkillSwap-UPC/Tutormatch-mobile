@@ -2,14 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNavbar from '../../dashboard/components/BottomNavbar';
@@ -119,7 +119,8 @@ const TutorTutoringsPage: React.FC = () => {
         {isTablet && (
           <SideBar visible={sidebarVisible} />
         )}
-        {!isTablet && <BottomNavbar onToggleSidebar={toggleSidebar} />}
+        {!isTablet && 
+        <BottomNavbar onToggleSidebar={toggleSidebar} />}
       </View>
     );
   }
@@ -142,7 +143,8 @@ const TutorTutoringsPage: React.FC = () => {
             </TouchableOpacity>
         </View>
 
-        {isTablet && (
+        {isTablet && 
+        (
           <SideBar visible={sidebarVisible} />
         )}
         {!isTablet && <BottomNavbar onToggleSidebar={toggleSidebar} />}
@@ -162,7 +164,6 @@ const TutorTutoringsPage: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Header del tutor */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="white" />

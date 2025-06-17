@@ -1,18 +1,19 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Image,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Course } from '../../course/types/Course';
 import TimeSlotSelectorBySection from '../../schedule/components/TimeSelectorBySection';
 import { TutoringImageService } from '../../tutoring/services/TutoringImageService';
@@ -34,6 +35,7 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
   onSave,
   currentUser
 }) => {
+  const insets = useSafeAreaInsets();
   // Estado para los semestres y cursos
   const [semesters, setSemesters] = useState<{ id: number; name: string; courses: Course[] }[]>([]);
   const [selectedSemester, setSelectedSemester] = useState<string>('');
@@ -302,24 +304,28 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
   };
 
   return (
-    <>
-      <Modal
+    <>      
+    <Modal
         visible={visible}
-        transparent={true}
         animationType="slide"
+        transparent={true}
         onRequestClose={onHide}
+        statusBarTranslucent={true}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            {/* Header */}
+          <View style={[styles.modalContainer, { paddingTop: insets.top + 20 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Nueva Tutoría</Text>
               <TouchableOpacity onPress={onHide} style={styles.closeButton}>
-                <MaterialIcons name="close" size={24} color="white" />
+                <Ionicons name="close" size={24} color="#9CA3AF" />
               </TouchableOpacity>
             </View>
             
-            <ScrollView style={styles.modalContent}>
+            <ScrollView 
+              style={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
               {/* Selector de semestre */}
               <View style={styles.formSection}>
                 <Text style={styles.sectionTitle}>Semestre del curso</Text>
@@ -386,15 +392,16 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
 
               {/* Descripción del curso */}
               <View style={styles.formSection}>
-                <Text style={styles.sectionTitle}>Descripción</Text>
+                <Text style={styles.sectionTitle}>Descripción</Text>                
                 <TextInput
                   value={description}
                   onChangeText={setDescription}
                   multiline
-                  numberOfLines={5}
+                  numberOfLines={4}
                   placeholder="Ingrese la descripción del curso"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#9CA3AF"
                   style={styles.textArea}
+                  textAlignVertical="top"
                 />
               </View>
 
@@ -409,9 +416,9 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
                       const value = parseFloat(text);
                       setPrice(isNaN(value) || value < 0 ? 0 : value);
                     }}
-                    keyboardType="numeric"
+                    keyboardType="numeric"                    
                     placeholder="Ingrese el precio"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#9CA3AF"
                     style={styles.priceInput}
                   />
                 </View>
@@ -465,20 +472,19 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
 
               {/* Qué aprenderán */}
               <View style={styles.formSection}>
-                <Text style={styles.sectionTitle}>¿Qué aprenderán?</Text>
+                <Text style={styles.sectionTitle}>¿Qué aprenderán?</Text>                
                 <TextInput
                   value={whatTheyWillLearn}
                   onChangeText={setWhatTheyWillLearn}
                   multiline
                   numberOfLines={4}
                   placeholder="Ingrese lo que aprenderán los estudiantes"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#9CA3AF"
                   style={styles.textArea}
+                  textAlignVertical="top"
                 />
                 <Text style={styles.helperText}>Separe cada punto con una nueva línea</Text>
-              </View>
-
-              {/* Horarios disponibles */}
+              </View>              
               <View style={styles.formSection}>
                 <Text style={styles.sectionTitle}>Horarios disponibles</Text>
                 <Text style={styles.helperText}>Toque en los espacios para marcar su disponibilidad</Text>
@@ -491,33 +497,42 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
                   }}
                 />
               </View>
-
-              {/* Botones de acción */}
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[
-                    styles.submitButton,
-                    (!isFormValid || isSubmitting || uploadingImage) && styles.disabledButton
-                  ]}
-                  onPress={onConfirmAddTutoring}
-                  disabled={!isFormValid || isSubmitting || uploadingImage}
-                >
-                  {isSubmitting ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="small" color="white" />
-                      <Text style={styles.submitButtonText}>Agregando...</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.submitButtonText}>Añadir Tutoría</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
+              
+              {/* Espacio adicional al final */}
+              <View style={{ height: 20 }} />
             </ScrollView>
+
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={onHide}
+                disabled={isSubmitting || uploadingImage}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (!isFormValid || isSubmitting || uploadingImage) && styles.submitButtonDisabled
+                ]}
+                onPress={onConfirmAddTutoring}
+                disabled={!isFormValid || isSubmitting || uploadingImage}
+              >
+                {isSubmitting ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={styles.submitButtonText}>Agregando...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.submitButtonText}>Añadir Tutoría</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
       
-      {/* Toast mensaje */}
       {toastVisible && (
         <View style={[
           styles.toast,
@@ -533,16 +548,17 @@ const CreateTutoringModal: React.FC<CreateTutoringModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
   },
   modalContainer: {
-    width: '90%',
+    backgroundColor: '#252525',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     maxHeight: '90%',
-    backgroundColor: '#1f1f1f',
-    borderRadius: 8,
-    overflow: 'hidden',
+    minHeight: '60%',
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -550,29 +566,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#3a3a3a',
+    borderBottomColor: '#4a4a4a',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: '#FFFFFF',
+    flex: 1,
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(156, 163, 175, 0.2)',
   },
   modalContent: {
-    padding: 16,
+    flex: 1,
+    paddingHorizontal: 16,
   },
   formSection: {
-    marginBottom: 24,
+    paddingVertical: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
-    color: 'white',
+    color: '#FFFFFF',
     marginBottom: 12,
-  },
-  semesterGrid: {
+  },  semesterGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginHorizontal: -4,
@@ -580,19 +599,20 @@ const styles = StyleSheet.create({
   semesterButton: {
     padding: 12,
     borderWidth: 1,
-    borderColor: '#3a3a3a',
-    borderRadius: 4,
+    borderColor: '#4a4a4a',
+    borderRadius: 8,
     margin: 4,
     flex: 1,
     minWidth: '22%',
     alignItems: 'center',
+    backgroundColor: '#1e1e1e',
   },
   selectedSemesterButton: {
     backgroundColor: '#F05C5C',
     borderColor: '#F05C5C',
   },
   semesterButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   selectedSemesterButtonText: {
@@ -600,56 +620,59 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#3a3a3a',
-    borderRadius: 4,
-    backgroundColor: '#1a1a1a',
+    borderColor: '#4a4a4a',
+    borderRadius: 8,
+    backgroundColor: '#1e1e1e',
     overflow: 'hidden',
   },
   picker: {
-    color: 'white',
-    backgroundColor: '#1a1a1a',
+    color: '#FFFFFF',
+    backgroundColor: '#1e1e1e',
   },
   pickerItem: {
-    color: 'white',
+    color: '#FFFFFF',
   },
   textArea: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#1e1e1e',
     borderWidth: 1,
-    borderColor: '#3a3a3a',
-    borderRadius: 4,
-    padding: 12,
-    color: 'white',
+    borderColor: '#4a4a4a',
+    borderRadius: 8,
+    padding: 14,
+    color: '#FFFFFF',
+    fontSize: 16,
     textAlignVertical: 'top',
-    minHeight: 120,
+    minHeight: 100,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#1e1e1e',
     borderWidth: 1,
-    borderColor: '#3a3a3a',
-    borderRadius: 4,
+    borderColor: '#4a4a4a',
+    borderRadius: 8,
     paddingHorizontal: 12,
   },
   priceCurrency: {
-    color: 'white',
+    color: '#FFFFFF',
     marginRight: 8,
+    fontSize: 16,
   },
   priceInput: {
     flex: 1,
-    padding: 12,
-    color: 'white',
-  },
-  imageUploadButton: {
+    padding: 14,
+    color: '#FFFFFF',
+    fontSize: 16,
+  },  imageUploadButton: {
     backgroundColor: '#F05C5C',
-    padding: 12,
-    borderRadius: 4,
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center',
     alignSelf: 'flex-start',
   },
   imageUploadButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 16,
   },
   imagePreviewContainer: {
     marginTop: 12,
@@ -665,69 +688,91 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   imagePreview: {
     width: '100%',
     height: 200,
-    borderRadius: 4,
+    borderRadius: 8,
     resizeMode: 'cover',
   },
   removeImageButton: {
     backgroundColor: '#F05C5C',
     padding: 12,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
   },
   removeImageButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   successText: {
     color: '#10b981',
     marginTop: 8,
+    fontSize: 14,
   },
   errorText: {
     color: '#ef4444',
     marginTop: 8,
+    fontSize: 14,
   },
   helperText: {
-    color: '#9ca3af',
+    color: '#9CA3AF',
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 6,
   },
-  actionButtons: {
-    marginTop: 24,
-    alignItems: 'flex-end',
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#4a4a4a',
+    backgroundColor: '#252525',
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '500',
   },
   submitButton: {
+    flex: 1,
     backgroundColor: '#F05C5C',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 4,
+    borderRadius: 8,
+    marginLeft: 8,
     alignItems: 'center',
-    minWidth: 120,
   },
-  disabledButton: {
-    backgroundColor: '#6b7280',
-    opacity: 0.7,
+  submitButtonDisabled: {
+    backgroundColor: '#4a4a4a',
   },
   submitButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  toast: {
+    gap: 8,
+  },  toast: {
     position: 'absolute',
     bottom: 20,
     left: 20,
     right: 20,
     padding: 16,
-    borderRadius: 4,
+    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -739,7 +784,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc2626',
   },
   toastText: {
-    color: 'white',
+    color: '#FFFFFF',
     marginLeft: 8,
   },
 });

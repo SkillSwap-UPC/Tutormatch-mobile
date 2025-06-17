@@ -14,6 +14,7 @@ import TutoringRecommendations from '../../tutoring/components/TutoringRecommend
 import { TutoringService } from '../../tutoring/services/TutoringService';
 import { TutoringSession } from '../../tutoring/types/Tutoring';
 import { Text } from '../../utils/TextFix';
+import CreateTutoringModal from '../components/CreateTutoringModal';
 import DashboardLayout from '../components/DashboardLayout';
 import Navbar from '../components/Navbar';
 
@@ -32,6 +33,9 @@ const DashboardPage: React.FC = () => {
   const [recommendedTutorings, setRecommendedTutorings] = useState<TutoringSession[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estado para el modal de creación de tutoría
+  const [showCreateTutoringModal, setShowCreateTutoringModal] = useState<boolean>(false);
 
   // Obtener datos de tutorías de la API
   useEffect(() => {
@@ -57,15 +61,24 @@ const DashboardPage: React.FC = () => {
 
     fetchTutorings();
   }, []);
-
   // Manejar clic en una tarjeta de tutoría
   const handleTutoringClick = (tutoringId: string) => {
     navigation.navigate('TutoringDetails', { tutoringId: tutoringId });
   };
 
+  // Manejar creación de nueva tutoría
+  const handleCreateTutoring = (newTutoring: any) => {
+    // Agregar la nueva tutoría a la lista
+    setRecommendedTutorings(prevTutorings => [newTutoring, ...prevTutorings]);
+  };
+  // Función para abrir el modal (será llamada desde el sidebar)
+  const openCreateTutoringModal = () => {
+    console.log('DashboardPage: openCreateTutoringModal called');
+    setShowCreateTutoringModal(true);
+  };
+
   // Determinar si estamos cargando cualquier dato
   const loading = userLoading || isLoading;
-  // Crear el header del perfil como componente separado
   const ProfileHeader = () => (
     <>
       {user && (
@@ -118,11 +131,10 @@ const DashboardPage: React.FC = () => {
         Tutorías disponibles para ti
       </Text>
     </>
-  );
-  return (
+  );  return (
     <>
       <Navbar />
-      <DashboardLayout>
+      <DashboardLayout onCreateTutoring={openCreateTutoringModal}>
         <View style={styles.container}>
           {loading ? (
             <View style={styles.loadingContainer}>
@@ -151,6 +163,15 @@ const DashboardPage: React.FC = () => {
           )}
         </View>
       </DashboardLayout>
+      
+      {user && (
+        <CreateTutoringModal
+          visible={showCreateTutoringModal}
+          onHide={() => setShowCreateTutoringModal(false)}
+          onSave={handleCreateTutoring}
+          currentUser={user}
+        />
+      )}
     </>
   );
 };
