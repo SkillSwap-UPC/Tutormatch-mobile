@@ -177,19 +177,6 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose, onCr
             style
           ]}
         >
-          {/* Búsqueda prominente */}
-          <View style={styles.searchSection}>
-            <View style={styles.searchContainer}>
-              <View style={styles.searchInputContainer}>
-                <MaterialIcons name="search" size={20} color="#9ca3af" style={styles.searchIcon} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Buscar cualquier curso o tutoría..."
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
-            </View>
-          </View>          
           {user?.role === 'tutor' && (
             <View style={styles.addButtonContainer}>
               <TouchableOpacity
