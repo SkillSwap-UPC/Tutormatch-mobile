@@ -274,9 +274,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, onReviewUpdated, onRevi
                 color={liked ? '#FFFFFF' : '#9CA3AF'}
                 style={styles.heartIcon}
               />
-              <Text style={[styles.likeButtonText, liked ? styles.likedButtonText : {}]}>
-                {liked ? 'Te gusta' : 'Me gusta'}
-              </Text>
             </TouchableOpacity>
             <Text style={styles.likesCount}>{likes} {likes === 1 ? 'like' : 'likes'}</Text>
           </View>
