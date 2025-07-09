@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Modal, 
-  StyleSheet, 
-  ScrollView, 
-  Animated, 
-  SafeAreaView 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { supabase } from '../../../../lib/supabase/client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MembershipWaitingPage({ navigation }: any) {
   const [dots, setDots] = useState('');
@@ -127,7 +127,7 @@ export default function MembershipWaitingPage({ navigation }: any) {
           setShowRejectedModal(true);
           if (timeoutRef.current) clearTimeout(timeoutRef.current);
           timeoutRef.current = setTimeout(() => {
-            navigation.navigate('MembershipPlans');
+            navigation.navigate('MembershipPlansPage');
           }, 3500);
         }
       } catch (error) {
@@ -222,7 +222,7 @@ export default function MembershipWaitingPage({ navigation }: any) {
               onPress={() => {
                 setShowRejectedModal(false);
                 if (timeoutRef.current) clearTimeout(timeoutRef.current);
-                navigation.navigate('MembershipPlans');
+                navigation.navigate('MembershipPlansPage');
               }}
             >
               <Text style={styles.modalButtonText}>Ir a membresías</Text>
