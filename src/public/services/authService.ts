@@ -15,7 +15,7 @@ export class AuthService {
             console.error('Error al guardar userId en AsyncStorage:', error);
         }
     }
-  
+
     /**
      * Obtiene el ID del usuario actual desde AsyncStorage
      */
@@ -27,7 +27,30 @@ export class AuthService {
             return null;
         }
     }
-  
+
+    /**
+     * Guarda el rol del usuario actual en el almacenamiento local
+     */
+    static async setCurrentUserRole(role: string): Promise<void> {
+        try {
+            await AsyncStorage.setItem('currentUserRole', role);
+        } catch (error) {
+            console.error('Error al obtener userId de AsyncStorage:', error);
+        }
+    }
+
+    /**
+     * Obtiene el rol del usuario actual desde el almacenamiento local
+     */
+    static async getCurrentUserRole(): Promise<string | null> {
+        try {
+            return await AsyncStorage.getItem('currentUserRole');
+        } catch (error) {
+            console.error('Error al obtener userId de AsyncStorage:', error);
+            return null;
+        }    }
+
+
     /**
      * Elimina el ID del usuario actual de AsyncStorage
      */
@@ -39,14 +62,14 @@ export class AuthService {
             console.error('Error al limpiar datos de usuario de AsyncStorage:', error);
         }
     }
-  
+
     /**
      * Obtiene el perfil completo del usuario actual
      */
     static async getCurrentUserProfile(): Promise<User | null> {
         const userId = await this.getCurrentUserId();
         if (!userId) return null;
-        
+
         try {
             // Primero intentamos obtener el perfil desde la API
             const token = await AsyncStorage.getItem('auth_token');
@@ -57,7 +80,7 @@ export class AuthService {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    
+
                     if (response.data) {
                         return new User({
                             id: response.data.id,
@@ -81,16 +104,16 @@ export class AuthService {
                     // Si falla, caemos back al método de Supabase
                 }
             }
-            
+
             // Si no hay token o falló la petición, usamos Supabase como fallback
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
-                
+
             if (error || !data) return null;
-            
+
             return new User({
                 id: data.id,
                 email: data.email,
@@ -112,11 +135,11 @@ export class AuthService {
             return null;
         }
     }
-  
+
     /**
      * Actualiza el perfil del usuario
      */
-    static async updateProfile(userId: string, profileData: Partial<User>): Promise<{success: boolean, message: string}> {
+    static async updateProfile(userId: string, profileData: Partial<User>): Promise<{ success: boolean, message: string }> {
         try {
             const token = await AsyncStorage.getItem('auth_token');
             if (token) {
@@ -127,7 +150,7 @@ export class AuthService {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    
+
                     return {
                         success: true,
                         message: 'Perfil actualizado correctamente'
@@ -139,7 +162,7 @@ export class AuthService {
                     throw error;
                 }
             }
-            
+
             const dbProfileData = {
                 first_name: profileData.firstName,
                 last_name: profileData.lastName,
@@ -151,19 +174,19 @@ export class AuthService {
                 tutor_id: profileData.tutorId,
                 updated_at: new Date().toISOString()
             };
-            
+
             const { error } = await supabase
                 .from('profiles')
                 .update(dbProfileData)
                 .eq('id', userId);
-                
+
             if (error) {
                 return {
                     success: false,
                     message: error.message || 'Error al actualizar el perfil'
                 };
             }
-            
+
             return {
                 success: true,
                 message: 'Perfil actualizado correctamente'
@@ -185,22 +208,22 @@ export class AuthService {
             // En v1.35.7 no existe admin.listUsers, verificamos intentando iniciar sesión
             // Este método no es tan fiable pero es la mejor aproximación con esta versión
             const session = supabase.auth.session();
-            
+
             if (session?.user?.email === email) {
                 return true; // Si ya hay sesión con ese email, está verificado
             }
-            
+
             // Como fallback, podemos verificar si el usuario existe en la tabla profiles
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id')
                 .eq('email', email)
                 .single();
-                
+
             if (data && !error) {
                 return true; // Si existe en profiles, consideramos que está verificado
             }
-            
+
             return false;
         } catch (error) {
             console.error('Error al verificar estado del correo:', error);
@@ -231,7 +254,7 @@ export class AuthService {
             console.error('Error al establecer sesión en AsyncStorage:', error);
         }
     }
-      
+
     /**
      * Verifica si hay una sesión activa comprobando token y userId
      */
@@ -239,10 +262,10 @@ export class AuthService {
         try {
             const token = await AsyncStorage.getItem('auth_token');
             const userId = await AsyncStorage.getItem('currentUserId');
-            
+
             // También verificamos con Supabase directamente (compatible con v1.35.7)
             const supabaseSession = supabase.auth.session();
-            
+
             return !!(token && userId) || !!supabaseSession;
         } catch (error) {
             console.error('Error al verificar sesión activa:', error);

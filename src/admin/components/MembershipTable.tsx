@@ -82,7 +82,6 @@ export default function MembershipTable({
             <View key={m.id} style={styles.dataRow}>
               <View style={[styles.cell, styles.userColumn]}>
                 <View style={styles.userIdContainer}>
-                  <View style={styles.userAvatar} />
                   <Text style={styles.userIdText}>ID: {m.userId.slice(0, 8)}...</Text>
                 </View>
               </View>

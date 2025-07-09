@@ -17,6 +17,9 @@ import Icon from 'react-native-vector-icons/Feather';
 import { RootStackParamList } from "../../../App";
 import NavbarAuth from "../../components/NavbarAuth";
 import { useAuth } from "../../hooks/useAuth";
+import { MembershipService } from '../../pages/membership/services/MembershipService';
+import { AuthService } from '../../services/authService';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define el tipo para la navegación
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -46,7 +49,7 @@ export default function LoginPage() {
   // Manejar el cambio en el campo de correo con validación
   const handleEmailChange = (value: string) => {
     setEmail(value);
-    
+
     if (value && !validateEmail(value)) {
       setEmailError('El correo debe tener formato U20XXXXXXX@upc.edu.pe');
     } else {
@@ -60,56 +63,60 @@ export default function LoginPage() {
       showAlert('Campos incompletos', 'Por favor completa todos los campos');
       return;
     }
-    
+
     // Validar el formato del correo antes de intentar iniciar sesión
     if (!validateEmail(email)) {
       showAlert('Formato incorrecto', 'Debes usar un correo institucional UPC con formato U20XXXXXXX@upc.edu.pe');
       return;
     }
-    
+
     setLoading(true);
 
     try {
       // Primer intento: usando el método API
       console.log('Intentando con API backend...');
       let response = await signIn(email, password);
-      
-      // Si falla, intentar directamente con Supabase
+
       if (!response.success) {
-        console.log('Intentando método alternativo con Supabase directamente...');
         response = await signInDirectWithSupabase(email, password);
       }
-      
-      console.log('====================================');
-      console.log('Estado final de inicio de sesión:', { success: response.success, message: response.message });
-      
-      if (response.success) {
-        // Si tenemos datos del usuario, los mostramos
-        if (response.user) {
-          console.log('👤 USUARIO LOGUEADO:');
-          console.log('📧 Email:', response.user.email);
-          console.log('🪪 ID:', response.user.id);
-          console.log('👤 Nombre:', `${response.user.firstName} ${response.user.lastName}`);
-          console.log('🧩 Rol:', response.user.role || 'No definido');
-          console.log('📱 Teléfono:', response.user.phone || 'No especificado');
-          console.log('🎓 Semestre:', response.user.semesterNumber || 'No especificado');
-        } else {
-          console.log('✅ Autenticación exitosa pero sin datos de perfil completos');
-        }
 
-        // Navegar al Dashboard independientemente de si tenemos el perfil completo
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Profile' }]
-        });
+      if (response.success) {
+          const userRole = await AsyncStorage.getItem('currentUserRole');
+          console.log('Rol del usuario:', userRole);
+        if (userRole === 'tutor') {
+          // Solo tutores deben tener membresía activa
+          console.log(userRole);
+          try {
+            const membership = await MembershipService.getMyMembership();
+            if (membership && membership.status === 'active') {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Dashboard' }]
+              });
+            } else {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'MembershipPlansPage' }]
+              });
+            }
+          } catch (err) {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MembershipPlansPage' }]
+            });
+          }
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Dashboard' }]
+          });
+        }
       } else {
-        console.log('❌ No se pudo autenticar al usuario');
         showAlert('Error de autenticación', response.message || 'No se pudo iniciar sesión');
       }
-      console.log('====================================');
-      
+
     } catch (error) {
-      console.error('🔥 Error crítico durante el inicio de sesión:', error);
       showAlert('Error', 'Ha ocurrido un error inesperado al intentar iniciar sesión');
     } finally {
       setLoading(false);
@@ -128,8 +135,8 @@ export default function LoginPage() {
   return (
     <View style={styles.container}>
       <NavbarAuth />
-      
-      <ScrollView 
+
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -138,7 +145,7 @@ export default function LoginPage() {
             <Text style={styles.cardTitle}>Iniciar Sesión</Text>
             <Text style={styles.cardSubtitle}>Ingresa tus credenciales para acceder a tu cuenta</Text>
           </View>
-          
+
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
               <View style={styles.labelContainer}>
@@ -175,7 +182,7 @@ export default function LoginPage() {
                   secureTextEntry={!showPassword}
                   style={styles.input}
                 />
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.eyeIcon}
                   onPress={() => setShowPassword(!showPassword)}
                 >
@@ -199,11 +206,11 @@ export default function LoginPage() {
               )}
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.cardFooter}>
             <Text style={styles.registerText}>
               ¿No tienes una cuenta?{" "}
-              <Text 
+              <Text
                 style={styles.registerLink}
                 onPress={() => navigation.navigate('Register')}
               >

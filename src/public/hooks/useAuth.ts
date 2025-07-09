@@ -125,6 +125,7 @@ export function useAuth() {
 
     try {
       console.log('Obteniendo perfil para usuario ID:', userId);
+      AsyncStorage.setItem('currentUserId', userId);
       
       try {
         // Consulta segura que no debería usar localStorage directamente
@@ -211,7 +212,6 @@ export function useAuth() {
       console.log('Respuesta recibida del servidor:', {
         status: response.status,
         headers: response.headers,
-        // No imprimir datos sensibles, solo estructura
         dataStructure: response.data ? Object.keys(response.data) : 'No data'
       });
 
@@ -221,15 +221,11 @@ export function useAuth() {
         await TokenStorage.setToken(newToken);
         setToken(newToken);
 
-        // Guardar el ID del usuario
         if (response.data.user && response.data.user.id) {
           await AuthService.setCurrentUser(response.data.user.id);
         }
 
-        // Actualizar la sesión de Supabase para mantener compatibilidad
-        // En v1.35.7, auth.setSession() no existe, en su lugar:
         try {
-          // Alternativamente, podemos hacer un inicio de sesión personalizado
           const { error: signInError } = await supabase.auth.signIn({
             email,
             password
@@ -244,7 +240,6 @@ export function useAuth() {
 
         let userProfile: User | null = null;
 
-        // Obtener el perfil del usuario
         if (response.data.user && response.data.user.id) {
           try {
             const { data, error } = await supabase
@@ -252,8 +247,10 @@ export function useAuth() {
               .select('*')
               .eq('id', response.data.user.id)
               .single();
-
+            // Usar el rol de la tabla profiles, no del objeto user de auth
             if (data && !error) {
+              AuthService.setCurrentUserRole(data.role);
+              console.log('Rol del usuario establecido LOGIN:', data.role);
               userProfile = new User({
                 id: response.data.user.id,
                 email: data.email,
@@ -270,7 +267,6 @@ export function useAuth() {
                 createdAt: new Date(data.created_at),
                 updatedAt: new Date(data.updated_at),
               });
-
               setUser(userProfile);
             }
           } catch (profileError) {
@@ -367,7 +363,7 @@ export function useAuth() {
             .select('*')
             .eq('id', supabaseUser.id)
             .single();
-            
+      
           if (error) {
             console.error('Error al obtener perfil desde Supabase:', error);
             return {
@@ -377,6 +373,7 @@ export function useAuth() {
           }
           
           if (data) {
+            AuthService.setCurrentUserRole(data.role as UserRole);
             const userProfile = new User({
               id: supabaseUser.id,
               email: data.email,
@@ -439,6 +436,8 @@ export function useAuth() {
         semesterNumber: Number(userData.semesterNumber),
         role: userData.role
       };
+      AuthService.setCurrentUserRole(userData.role as UserRole);
+      console.log('Rol del usuario establecido SIGNUP:', userData.role);
 
       console.log('Enviando datos de registro (ajustados):', JSON.stringify(registerData));
 

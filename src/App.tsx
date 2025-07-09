@@ -15,6 +15,8 @@ import SupportPage from './support/pages/SupportPage';
 import TutoringDetailsPage from './tutoring/pages/TutoringDetailsPage';
 import TutorTutoringsPage from './tutoring/pages/TutorTutoringsPage';
 import AdminDashboardPage from './admin/pages/AdminDashboardPage';
+import MembershipPlansPage from './public/pages/membership/pages/MembershipPlansPage';
+import MembershipWaitingPage from './public/pages/membership/pages/MembershipWaitingPage';
 // import './utils/deepFix';
 // import { applyDeepPatches } from './utils/deepPatches';
 // import { patchReactNativeText } from './utils/patchText';
@@ -37,6 +39,8 @@ export type RootStackParamList = {
   ResetPassword: { token?: string };
   NotFound: undefined;
   AdminDashboardPage: undefined;
+  MembershipPlansPage: undefined;
+  MembershipWaitingPage: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -65,6 +69,8 @@ const App = () => {
         <Stack.Screen name="Support" component={SupportPage} />
         <Stack.Screen name="NotFound" component={NotFoundPage} />
         <Stack.Screen name="AdminDashboardPage" component={AdminDashboardPage} />
+        <Stack.Screen name="MembershipPlansPage" component={MembershipPlansPage} />
+        <Stack.Screen name="MembershipWaitingPage" component={MembershipWaitingPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
