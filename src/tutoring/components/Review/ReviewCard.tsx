@@ -20,8 +20,6 @@ interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review, onReviewUpdated, onReviewDeleted }) => {
-  const [likes, setLikes] = useState<number>(review.likes || 0);
-  const [liked, setLiked] = useState<boolean>(false);
   const [isOwner, setIsOwner] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedComment, setEditedComment] = useState<string>(review.comment || '');
@@ -112,17 +110,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, onReviewUpdated, onRevi
       ]
     );
   };
-
-  const handleLike = () => {
-    if (!liked) {
-      setLikes(likes + 1);
-      setLiked(true);
-    } else {
-      setLikes(likes - 1);
-      setLiked(false);
-    }
-  };
-
+  
   const formatDate = (date?: string | Date) => {
     if (!date) return 'Fecha no disponible';
     // Convertir la cadena a un objeto Date si es necesario
@@ -256,26 +244,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, onReviewUpdated, onRevi
                 {isSubmitting ? 'Guardando...' : 'Guardar'}
               </Text>
             </TouchableOpacity>
-          </View>
-        )}
-
-        {!isEditing && (
-          <View style={styles.likesContainer}>
-            <TouchableOpacity
-              onPress={handleLike}
-              style={[
-                styles.likeButton,
-                liked ? styles.likedButton : {}
-              ]}
-            >
-              <Ionicons
-                name="heart"
-                size={16}
-                color={liked ? '#FFFFFF' : '#9CA3AF'}
-                style={styles.heartIcon}
-              />
-            </TouchableOpacity>
-            <Text style={styles.likesCount}>{likes} {likes === 1 ? 'like' : 'likes'}</Text>
           </View>
         )}
       </View>

@@ -14,6 +14,7 @@ import ProfilePage from './public/pages/profile/ProfilePage';
 import SupportPage from './support/pages/SupportPage';
 import TutoringDetailsPage from './tutoring/pages/TutoringDetailsPage';
 import TutorTutoringsPage from './tutoring/pages/TutorTutoringsPage';
+import AdminDashboardPage from './admin/pages/AdminDashboardPage';
 // import './utils/deepFix';
 // import { applyDeepPatches } from './utils/deepPatches';
 // import { patchReactNativeText } from './utils/patchText';
@@ -35,6 +36,7 @@ export type RootStackParamList = {
   Support: undefined;
   ResetPassword: { token?: string };
   NotFound: undefined;
+  AdminDashboardPage: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -62,6 +64,7 @@ const App = () => {
         <Stack.Screen name="Profile" component={ProfilePage} />
         <Stack.Screen name="Support" component={SupportPage} />
         <Stack.Screen name="NotFound" component={NotFoundPage} />
+        <Stack.Screen name="AdminDashboardPage" component={AdminDashboardPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );

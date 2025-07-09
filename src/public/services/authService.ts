@@ -134,15 +134,12 @@ export class AuthService {
                     };
                 } catch (error: any) {
                     if (error.response?.status === 401) {
-                        // Si es error de autenticación, limpiamos el token
                         await AsyncStorage.removeItem('auth_token');
                     }
                     throw error;
                 }
             }
             
-            // Fallback a Supabase
-            // Convertir del formato de User a formato de DB
             const dbProfileData = {
                 first_name: profileData.firstName,
                 last_name: profileData.lastName,

@@ -63,6 +63,7 @@ type RootStackParamList = {
   TutoringDetails: { tutoringId: string };
   TutoringsBySemester: { semesterId: string };
   SemesterDetail: { semesterId: string };
+  AdminDashboardPage: undefined;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose, onCreateTutoring }) => {
@@ -91,7 +92,8 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose, onCr
     const loadSemesters = async () => {
       try {
         setLoading(true);
-        const data = await SemesterService.getSemesters();        if (Array.isArray(data)) {
+        const data = await SemesterService.getSemesters();
+        if (Array.isArray(data)) {
           const formattedSemesters = data.map((sem, index) => {
             const match = sem.name.match(/(\d+)/);
             const semNumber = match ? parseInt(match[1]) - 1 : index;
@@ -190,6 +192,25 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose, onCr
             </View>
           )}
 
+          {user?.role === 'admin' && (
+            <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                  backgroundColor: '#f05c5c',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onPress={() => handleLinkPress('AdminDashboardPage')}
+                activeOpacity={0.8}
+              >
+                <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>Moderar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {user && (
             <View style={styles.userInfoContainer}>
               <View style={styles.userProfile}>
@@ -230,7 +251,7 @@ const Sidebar: React.FC<SidebarProps> = ({ style, visible = false, onClose, onCr
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#f05c5c" />
               </View>
-            ) : semesters.length > 0 ? (              
+            ) : semesters.length > 0 ? (
               semesters.map((item, index) => (
                 <TouchableOpacity
                   key={index}
@@ -361,7 +382,7 @@ const styles = StyleSheet.create({
   addButtonContainer: {
     paddingHorizontal: 16,
     marginBottom: 8,
-  },  addButton: {
+  }, addButton: {
     backgroundColor: '#f05c5c',
     padding: 12,
     borderRadius: 8,

@@ -7,7 +7,6 @@ import { supabase } from '../../lib/supabase/client';
 import { User, UserRole, UserStatus } from '../../user/types/User';
 import { AuthService } from '../services/authService';
 
-// Clase auxiliar para gestionar el token en React Native
 class TokenStorage {
   static async getToken(): Promise<string | null> {
     try {
@@ -430,7 +429,6 @@ export function useAuth() {
 
   const signUp = async (email: string, password: string, userData: any): Promise<{ success: boolean, message: string }> => {
     try {
-      // Ajustamos la estructura para que coincida exactamente con el RegisterDto del backend
       const registerData = {
         email,
         password,
@@ -448,13 +446,11 @@ export function useAuth() {
         const response = await axios.post(`${API_URL}/auth/register`, registerData);
 
         if (response.data) {
-          // Si hay datos del usuario y sesión en la respuesta, actualizamos el estado
           if (response.data.user && response.data.session) {
             const newToken = response.data.session.access_token;
             await TokenStorage.setToken(newToken);
             setToken(newToken);
 
-            // Guardar el ID del usuario
             if (response.data.user.id) {
               await AuthService.setCurrentUser(response.data.user.id);
             }
@@ -467,7 +463,7 @@ export function useAuth() {
         }
 
         return {
-          success: true,  // Consideramos exitoso incluso si solo recibimos un 200 sin datos específicos
+          success: true,
           message: 'Registro enviado correctamente. Por favor verifica tu correo electrónico.'
         };
       } catch (apiError: any) {
@@ -477,9 +473,7 @@ export function useAuth() {
     } catch (error: any) {
       console.error('Error detallado:', error.response?.data);
 
-      // Manejo específico para diferentes tipos de errores
       if (error.response?.status === 400) {
-        // Si hay un mensaje específico o detalles de validación, los extraemos
         const errorMessage = error.response.data.message;
         if (Array.isArray(errorMessage)) {
           return {
@@ -500,7 +494,6 @@ export function useAuth() {
     }
   };
 
-  // Usar el endpoint API de logout en lugar de Supabase directamente
   const signOut = async (): Promise<{ success: boolean, message: string }> => {
     try {
       if (!token) {
@@ -518,22 +511,9 @@ export function useAuth() {
         console.warn('Error al comunicarse con el endpoint de logout:', logoutError);
       }
 
-      // Limpiar la sesión de Supabase
-      const { error } = await supabase.auth.signOut(); // Esto es correcto en v1.35.7
-      if (error) {
-        console.warn('Error al cerrar sesión en Supabase:', error);
-      }
-
-      // Limpiar TODOS los elementos del almacenamiento relacionados con la autenticación
-      try {
-        // En lugar de limpiar todo el almacenamiento, solo limpiamos lo relacionado a auth
-        await TokenStorage.removeToken();
-        await AuthService.clearCurrentUser();
-      } catch (e) {
-        console.error('Error al limpiar AsyncStorage:', e);
-      }
-
-      // Actualizar el estado
+      await supabase.auth.signOut();
+      // Limpiar AsyncStorage
+      await TokenStorage.removeToken();
       setToken(null);
       setUser(null);
       setSession(null);
@@ -545,7 +525,6 @@ export function useAuth() {
     } catch (error: any) {
       console.error('Error durante el cierre de sesión:', error);
 
-      // Incluso si hay un error, intentamos limpiar AsyncStorage
       try {
         await TokenStorage.removeToken();
         await AuthService.clearCurrentUser();
@@ -557,13 +536,12 @@ export function useAuth() {
       }
 
       return {
-        success: true, // Considerar éxito incluso si el backend falló pero limpiamos localStorage
+        success: true,
         message: 'Se ha cerrado la sesión localmente'
       };
     }
   };
 
-  // Funciones adaptadas para la versión 1.35.7
   const verifyEmail = async (email: string): Promise<{ success: boolean, message: string, isVerified: boolean }> => {
     try {
       const { data, error } = await supabase
@@ -580,8 +558,6 @@ export function useAuth() {
         };
       }
 
-      // En la versión 1.35.7 no tenemos acceso a admin.listUsers
-      // Asumimos que si tiene un perfil ya está verificado
       return {
         success: true,
         isVerified: true,
@@ -598,7 +574,6 @@ export function useAuth() {
 
   const resetPassword = async (email: string): Promise<{ success: boolean, message: string }> => {
     try {
-      // En versión 1.35.7 la API es ligeramente diferente
       const { error } = await supabase.auth.api.resetPasswordForEmail(email);
 
       if (error) {
